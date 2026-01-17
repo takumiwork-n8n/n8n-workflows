@@ -1,0 +1,238 @@
+{
+    "name": "Multi-Platform Content Generator",
+    "nodes": [
+        {
+            "parameters": {
+                "rule": {
+                    "interval": [
+                        {
+                            "field": "hours",
+                            "hours": 9
+                        }
+                    ]
+                }
+            },
+            "id": "schedule-trigger",
+            "name": "Schedule Trigger",
+            "type": "n8n-nodes-base.scheduleTrigger",
+            "typeVersion": 1.1,
+            "position": [
+                220,
+                300
+            ]
+        },
+        {
+            "parameters": {
+                "values": {
+                    "string": [
+                        {
+                            "name": "persona_description",
+                            "value": "30-40代、年商1-3千万の個人事業主。「楽をして売上を上げたい」「自分の分身が欲しい」。"
+                        },
+                        {
+                            "name": "content_tone",
+                            "value": "親しみやすい「です・ます」調。専門用語を並べるのではなく、実利と共感を重視。"
+                        }
+                    ]
+                }
+            },
+            "id": "set-persona",
+            "name": "List 10 Ideas",
+            "type": "n8n-nodes-base.set",
+            "typeVersion": 2,
+            "position": [
+                440,
+                300
+            ]
+        },
+        {
+            "parameters": {
+                "mode": "combine",
+                "combinationMode": "mergeByPosition",
+                "options": {}
+            },
+            "id": "merge-results",
+            "name": "Merge Results",
+            "type": "n8n-nodes-base.merge",
+            "typeVersion": 2.1,
+            "position": [
+                1000,
+                400
+            ]
+        },
+        {
+            "parameters": {
+                "content": "## Output Config\nConnect this node to your desired output destination (e.g., Google Sheets, Notion, Slack).\n\nCurrent Output:\n- 10 X Posts\n- 10 Threads Posts\n- 10 Instagram Ideas\n- 10 Note Themes",
+                "height": 260,
+                "width": 300
+            },
+            "id": "sticky-note",
+            "name": "Sticky Note",
+            "type": "n8n-nodes-base.stickyNote",
+            "typeVersion": 1,
+            "position": [
+                1100,
+                300
+            ]
+        },
+        {
+            "parameters": {
+                "prompt": "You are a social media expert. Based on the following persona and tone, generate 10 engaging tweets (X posts).\n\nPersona: {{ $json.persona_description }}\nTone: {{ $json.content_tone }}\n\nOutput format: Return a numbered list of 10 post ideas."
+            },
+            "id": "basic-llm-x",
+            "name": "LLM (X)",
+            "type": "n8n-nodes-base.openAi",
+            "typeVersion": 1,
+            "position": [
+                700,
+                100
+            ],
+            "credentials": {
+                "openaiApi": {
+                    "id": "YOUR_CREDENTIAL_ID",
+                    "name": "OpenAI account"
+                }
+            }
+        },
+        {
+            "parameters": {
+                "prompt": "You are a social media expert. Based on the following persona and tone, generate 10 conversation-starting Threads posts.\n\nPersona: {{ $json.persona_description }}\nTone: {{ $json.content_tone }}\n\nOutput format: Return a numbered list of 10 post ideas."
+            },
+            "id": "basic-llm-threads",
+            "name": "LLM (Threads)",
+            "type": "n8n-nodes-base.openAi",
+            "typeVersion": 1,
+            "position": [
+                700,
+                300
+            ],
+            "credentials": {
+                "openaiApi": {
+                    "id": "YOUR_CREDENTIAL_ID",
+                    "name": "OpenAI account"
+                }
+            }
+        },
+        {
+            "parameters": {
+                "prompt": "You are a social media expert. Based on the following persona and tone, generate 10 visual ideas or caption drafts for Instagram.\n\nPersona: {{ $json.persona_description }}\nTone: {{ $json.content_tone }}\n\nOutput format: Return a numbered list of 10 post ideas."
+            },
+            "id": "basic-llm-instagram",
+            "name": "LLM (Instagram)",
+            "type": "n8n-nodes-base.openAi",
+            "typeVersion": 1,
+            "position": [
+                700,
+                500
+            ],
+            "credentials": {
+                "openaiApi": {
+                    "id": "YOUR_CREDENTIAL_ID",
+                    "name": "OpenAI account"
+                }
+            }
+        },
+        {
+            "parameters": {
+                "prompt": "You are a social media expert. Based on the following persona and tone, generate 10 article themes/titles for 'note'.\n\nPersona: {{ $json.persona_description }}\nTone: {{ $json.content_tone }}\n\nOutput format: Return a numbered list of 10 post ideas."
+            },
+            "id": "basic-llm-note",
+            "name": "LLM (Note)",
+            "type": "n8n-nodes-base.openAi",
+            "typeVersion": 1,
+            "position": [
+                700,
+                700
+            ],
+            "credentials": {
+                "openaiApi": {
+                    "id": "YOUR_CREDENTIAL_ID",
+                    "name": "OpenAI account"
+                }
+            }
+        }
+    ],
+    "connections": {
+        "Schedule Trigger": {
+            "main": [
+                [
+                    {
+                        "node": "List 10 Ideas",
+                        "type": "main",
+                        "index": 0
+                    }
+                ]
+            ]
+        },
+        "List 10 Ideas": {
+            "main": [
+                [
+                    {
+                        "node": "LLM (X)",
+                        "type": "main",
+                        "index": 0
+                    },
+                    {
+                        "node": "LLM (Threads)",
+                        "type": "main",
+                        "index": 0
+                    },
+                    {
+                        "node": "LLM (Instagram)",
+                        "type": "main",
+                        "index": 0
+                    },
+                    {
+                        "node": "LLM (Note)",
+                        "type": "main",
+                        "index": 0
+                    }
+                ]
+            ]
+        },
+        "LLM (X)": {
+            "main": [
+                [
+                    {
+                        "node": "Merge Results",
+                        "type": "main",
+                        "index": 0
+                    }
+                ]
+            ]
+        },
+        "LLM (Threads)": {
+            "main": [
+                [
+                    {
+                        "node": "Merge Results",
+                        "type": "main",
+                        "index": 1
+                    }
+                ]
+            ]
+        },
+        "LLM (Instagram)": {
+            "main": [
+                [
+                    {
+                        "node": "Merge Results",
+                        "type": "main",
+                        "index": 2
+                    }
+                ]
+            ]
+        },
+        "LLM (Note)": {
+            "main": [
+                [
+                    {
+                        "node": "Merge Results",
+                        "type": "main",
+                        "index": 3
+                    }
+                ]
+            ]
+        }
+    }
+}
