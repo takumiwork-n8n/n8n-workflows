@@ -1,2 +1,6 @@
 # n8n-workflows
-Personal n8n workflow archive.   Includes working setups, prototypes, and failed experiments.
+
+This repository stores my n8n workflows.
+
+- Purpose: content / note / SNS automation
+- Status: experimental & iterative
