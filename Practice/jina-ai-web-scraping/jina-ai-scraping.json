@@ -1,0 +1,206 @@
+{
+  "name": "jina-ai風scraping",
+  "nodes": [
+    {
+      "parameters": {},
+      "type": "n8n-nodes-base.manualTrigger",
+      "typeVersion": 1,
+      "position": [
+        0,
+        0
+      ],
+      "id": "380ae8c7-7b7e-48ff-a574-46a2d1d36576",
+      "name": "When clicking ‘Execute workflow’"
+    },
+    {
+      "parameters": {
+        "url": "http://host.docker.internal:8787/fetch",
+        "sendQuery": true,
+        "queryParameters": {
+          "parameters": [
+            {
+              "name": "url",
+              "value": "https://note.com/tom1970/n/nf68e8c337a92"
+            }
+          ]
+        },
+        "options": {
+          "response": {
+            "response": {
+              "responseFormat": "text"
+            }
+          }
+        }
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.3,
+      "position": [
+        176,
+        0
+      ],
+      "id": "bb81e7e6-8a9b-45a1-a10f-61c02f3bc34c",
+      "name": "HTTP Request"
+    },
+    {
+      "parameters": {
+        "jsCode": "const html = $input.first().json.data ?? \"\";\n\n// 1) 巨大ノイズを削除（script/style/svg/noscriptなど）\nlet cleaned = html\n  .replace(/<script[\\s\\S]*?<\\/script>/gi, \"\")\n  .replace(/<style[\\s\\S]*?<\\/style>/gi, \"\")\n  .replace(/<noscript[\\s\\S]*?<\\/noscript>/gi, \"\")\n  .replace(/<svg[\\s\\S]*?<\\/svg>/gi, \"\");\n\n// 2) 改行・空白を圧縮（トークン節約）\ncleaned = cleaned\n  .replace(/\\s+/g, \" \")\n  .trim();\n\nreturn [{\n  json: {\n    url: $input.first().json.url ?? null,\n    length_raw: html.length,\n    length_clean: cleaned.length,\n    html_clean: cleaned,\n  }\n}];\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        368,
+        0
+      ],
+      "id": "3cf18901-0f99-4c91-b21a-573fd0d4d190",
+      "name": "Code in JavaScript"
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "={{ $json.html_clean }}",
+        "messages": {
+          "messageValues": [
+            {
+              "message": "=あなたはWeb記事抽出の専門家です。\n\n以下はWebページのHTMLです。\nこのHTMLから「記事本文」だけを抽出してください。\n\nルール：\n- ヘッダー、フッター、ナビ、広告、SNSボタンは削除\n- 本文は日本語の自然な文章にする\n- 見出し構造（h1,h2,h3相当）を保持\n- Markdown形式で出力\n\nさらに以下も出力してください：\n1. 記事本文（Markdown）\n2. 3行要約\n3. 見出し案（h2レベル）を5つ\n\nHTML：\n"
+            }
+          ]
+        },
+        "batching": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.chainLlm",
+      "typeVersion": 1.8,
+      "position": [
+        528,
+        0
+      ],
+      "id": "ccbc8d65-e32d-4548-a002-d4dedb35c804",
+      "name": "Basic LLM Chain"
+    },
+    {
+      "parameters": {
+        "modelName": "models/gemini-2.5-flash-lite",
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatGoogleGemini",
+      "typeVersion": 1,
+      "position": [
+        528,
+        160
+      ],
+      "id": "2b66bd69-f112-4261-b567-cfd9dabbfe8e",
+      "name": "Google Gemini Chat Model",
+      "credentials": {
+        "googlePalmApi": {
+          "id": "Ty6PashobXC2B9ky",
+          "name": "Google Gemini(PaLM) Api account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "4638c4c0-bb72-4cb7-ae65-a57d0cca8e58",
+              "name": "本文",
+              "value": "={{ $json.text }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        800,
+        0
+      ],
+      "id": "0b4e67ad-acd4-431b-abf7-99d3a4e655e2",
+      "name": "Edit Fields"
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "When clicking ‘Execute workflow’": {
+      "main": [
+        [
+          {
+            "node": "HTTP Request",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "HTTP Request": {
+      "main": [
+        [
+          {
+            "node": "Code in JavaScript",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code in JavaScript": {
+      "main": [
+        [
+          {
+            "node": "Basic LLM Chain",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Google Gemini Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "Basic LLM Chain",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Basic LLM Chain": {
+      "main": [
+        [
+          {
+            "node": "Edit Fields",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1",
+    "availableInMCP": false
+  },
+  "versionId": "95e679e0-38d8-4a62-a1b2-4d776ecfda79",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "f07a7db4ed93e66e1e2d66a6dbb1b6f58e75dce88c79ca591af68b50df82ee3f"
+  },
+  "id": "O7oRqCw9igqXzFsO",
+  "tags": [
+    {
+      "updatedAt": "2026-01-18T05:25:58.241Z",
+      "createdAt": "2026-01-18T05:25:58.241Z",
+      "id": "joq9G8j3NcHhUzhg",
+      "name": "JinaAI"
+    },
+    {
+      "updatedAt": "2025-12-30T08:18:27.979Z",
+      "createdAt": "2025-12-30T08:18:27.979Z",
+      "id": "nimcISK6t16cvBTN",
+      "name": "Gemini"
+    }
+  ]
+}
