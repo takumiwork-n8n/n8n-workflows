@@ -5,6 +5,25 @@ Google TrendsのRSSフィードから最新の話題をAIが選定し、ブロ�
 ## 概要
 このワークフローは、トレンド情報の収集からコンテンツ企画までのプロセスを効率化します。AI Agentがトレンドの重要性を判断し、人間がSlack上で最終的な「GO/NO-GO」を判断するハイブリッドな設計が特徴です。
 
+## ワークフロー構成図 (Mermaid)
+
+```mermaid
+graph TD
+    Trigger["Manual Trigger"] --> SetURL["Edit Fields (trendUrl)"]
+    SetURL --> FetchRSS["Fetch Google Trends (HTTP)"]
+    FetchRSS --> AgentSelect["AI Agent (Topic Selection)"]
+    AgentSelect --> AgentWriter["AI Agent (Blog Design)"]
+    AgentWriter --> CodeClean["Code (Data Cleaning)"]
+    CodeClean --> Slack["Slack (Notify Approval)"]
+    Slack --> WaitNode["Wait (Human Interaction)"]
+    WaitNode --> BranchCheck["If (is Approved?)"]
+    
+    subgraph AI_Core
+        AgentSelect
+        AgentWriter
+    end
+```
+
 ## 主な機能/ステップ
 1. **Trend Fetch**: Google TrendsのRSSを取得します。
 2. **AI Curator**: 取得したトレンドから、バイラル性が高くターゲットに刺さるネタを1つ選定します。
