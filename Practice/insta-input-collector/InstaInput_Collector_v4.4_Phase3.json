@@ -1910,6 +1910,102 @@
       ],
       "id": "997e47dc-368a-4087-a932-689fb60aad95",
       "name": "Structured Output Parser"
+    },
+    {
+      "parameters": {
+        "select": "channel",
+        "channelId": {
+          "__rl": true,
+          "value": "C088R9P7HFE",
+          "mode": "list"
+        },
+        "text": "=💡 **コンテンツ承認依頼**\n\n【元ネタ】\n{{ $node[\"Trigger:FormInputs\"].json.raw_text }}\n\n【ペルソナ分析】\n{{ $node[\"Gemini:PersonaInsight\"].json.output.main_topic }}\n\n【スコア】\n合計: {{ $json.Score_total }}\n保存: {{ $('LLM:EditorScoring').item.json.output.score_save }}\n再現: {{ $('LLM:EditorScoring').item.json.output.score_repro }}\n新規: {{ $('LLM:EditorScoring').item.json.output.score_novel }}\n\n作成を開始してもよろしいですか？",
+        "otherOptions": {
+          "includeImageAndFileButtons": true
+        },
+        "actionsUI": {
+          "actionValues": [
+            {
+              "action": "button",
+              "text": "承認 ✅",
+              "value": "approve",
+              "style": "primary"
+            },
+            {
+              "action": "button",
+              "text": "却下 ❌",
+              "value": "reject",
+              "style": "danger"
+            }
+          ]
+        }
+      },
+      "id": "509f6719-ff3e-4e0b-8c05-e8cb88936133",
+      "name": "Slack:ApprovalNotify",
+      "type": "n8n-nodes-base.slack",
+      "typeVersion": 2.1,
+      "position": [
+        400,
+        1552
+      ],
+      "credentials": {
+        "slackApi": {
+          "id": "BrAdrR4v2B3hQpFR",
+          "name": "Slack account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "update",
+        "documentId": {
+          "__rl": true,
+          "value": "1R7ifZxqvyoRAfRotAMqtvs3x0JU7st9VVw61kiY3qRE",
+          "mode": "list"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": 1251414454,
+          "mode": "list"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "status": "rejected",
+            "id": "={{ $('Append:InitialIdea').item.json.id }}"
+          },
+          "matchingColumns": [
+            "id"
+          ]
+        }
+      },
+      "id": "0f6ee3f0-85bb-4426-8320-2128bbf01f87",
+      "name": "Update:StatusRejected",
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        650,
+        1700
+      ],
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "jCcTEIaZJkIql5yt",
+          "name": "Google Sheets account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "const fs = require('fs');\nconst path = require('path');\n\nconst vaultPath = '/Users/takuminozawa/Desktop/開発/Google Anitgravity/Playground/Obsidian-Vault/content/instainput-outputs/';\nconst date = new Date().toISOString().split('T')[0];\nconst topic = ($json.main_topic || 'no_topic').replace(/[^a-z0-9]/gi, '_').toLowerCase();\nconst fileName = `${date}_${topic}.md`;\nconst filePath = path.join(vaultPath, fileName);\n\nconst content = `# ${$json.main_topic || 'Untitled'}\n\n- Created: ${new Date().toLocaleString()}\n- Source: ${$node[\"Trigger:FormInputs\"].json.url || 'Manual Input'}\n\n## Content Outline\n${$json.carousel_output || ''}\n\n## Analysis\n- Pain Point: ${$json.pain_point || ''}\n- Misconception: ${$json.misconception || ''}\n`;\n\ntry {\n  if (!fs.existsSync(vaultPath)) {\n    fs.mkdirSync(vaultPath, { recursive: true });\n  }\n  fs.writeFileSync(filePath, content);\n  return { success: true, path: filePath };\n} catch (error) {\n  return { success: false, error: error.message };\n}"
+      },
+      "id": "a472bf77-4df0-4b9d-b284-286533bab4cf",
+      "name": "Obsidian:Sync",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1800,
+        1150
+      ]
     }
   ],
   "connections": {
@@ -2037,7 +2133,7 @@
       "main": [
         [
           {
-            "node": "Agent:ContentCreator",
+            "node": "Slack:ApprovalNotify",
             "type": "main",
             "index": 0
           }
@@ -2116,6 +2212,11 @@
           },
           {
             "node": "Slack:SuccessNotify",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Obsidian:Sync",
             "type": "main",
             "index": 0
           }
@@ -2203,11 +2304,23 @@
           }
         ]
       ]
+    },
+    "Slack:ApprovalNotify": {
+      "main": [
+        [
+          {
+            "node": "Agent:ContentCreator",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
     }
   },
   "pinData": {},
   "meta": {
     "templateCredsSetupCompleted": true,
     "instanceId": "f07a7db4ed93e66e1e2d66a6dbb1b6f58e75dce88c79ca591af68b50df82ee3f"
-  }
+  },
+  "name": "InstaInput_Collector v4.4 (Phase 3)"
 }
