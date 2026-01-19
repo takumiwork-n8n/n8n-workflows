@@ -1,0 +1,382 @@
+{
+    "nodes": [
+        {
+            "parameters": {},
+            "type": "n8n-nodes-base.manualTrigger",
+            "typeVersion": 1,
+            "position": [
+                272,
+                -320
+            ],
+            "id": "36edfbb6-3c03-45a8-a2f9-b95610e3af81",
+            "name": "When clicking ‘Execute workflow’"
+        },
+        {
+            "parameters": {
+                "assignments": {
+                    "assignments": [
+                        {
+                            "id": "43671f93-0a9f-426f-92a6-cf5efbe7a40b",
+                            "name": "trendUrl",
+                            "value": "https://trends.google.co.jp/trending/rss?geo=JP",
+                            "type": "string"
+                        }
+                    ]
+                },
+                "options": {}
+            },
+            "type": "n8n-nodes-base.set",
+            "typeVersion": 3.4,
+            "position": [
+                480,
+                -320
+            ],
+            "id": "73ba1112-3475-4f7b-ba7d-89f63b0811bc",
+            "name": "Edit Fields"
+        },
+        {
+            "parameters": {
+                "promptType": "define",
+                "text": "={{ $json.data }}",
+                "hasOutputParser": true,
+                "options": {
+                    "systemMessage": "あなたは優秀な編集長です。入力されたRSSフィードのデータから、今最もSNSで話題になりそうな「ガジェット」「AI技術」「ライフハック」に関するネタを1つだけ選定してください。\n\n選定基準:\n- 検索ボリュームの急上昇\n- SNSでのバイラル性\n- ターゲット層への関連性\n\n出力は以下のJSON形式のみで行ってください。"
+                }
+            },
+            "type": "@n8n/n8n-nodes-langchain.agent",
+            "typeVersion": 3.1,
+            "position": [
+                928,
+                -320
+            ],
+            "id": "247a4d4d-19b0-483b-bbeb-a26e38d318ee",
+            "name": "AI Agent"
+        },
+        {
+            "parameters": {
+                "promptType": "define",
+                "text": "={{ $json.output.selected_topic }}",
+                "options": {
+                    "systemMessage": "あなたはSEOに精通したプロのブログライターです。\n\nあなたのタスク:\n1. 提供されたトピックについて、SEOを意識した3000文字程度のブログ記事構成案を作成する\n2. 結論ファーストで書く\n3. H1, H2, H3の見出し構造を明確にする\n4. 検索意図を満たすコンテンツにする\n5. 読者に価値を提供する実用的な情報を含める\n\n出力形式:\n- H1: メインタイトル\n- 導入（結論を先に述べる）\n- H2: セクション1\n  - H3: サブセクション\n- H2: セクション2\n  - H3: サブセクション\n- まとめ"
+                }
+            },
+            "type": "@n8n/n8n-nodes-langchain.agent",
+            "typeVersion": 3.1,
+            "position": [
+                1248,
+                -320
+            ],
+            "id": "05ff10ee-386e-4da5-9a6c-e1d5d30503c8",
+            "name": "AI Agent1"
+        },
+        {
+            "parameters": {
+                "select": "channel",
+                "channelId": {
+                    "__rl": true,
+                    "value": "#all-monitaring-web-site",
+                    "mode": "name"
+                },
+                "messageType": "block",
+                "blocksUi": "={\n\t\"blocks\": [\n\t\t{\n\t\t\t\"type\": \"header\",\n\t\t\t\"text\": {\n\t\t\t\t\"type\": \"plain_text\",\n\t\t\t\t\"text\": \"🚀 新しいトレンドコンテンツが生成されました！\",\n\t\t\t\t\"emoji\": true\n\t\t\t}\n\t\t},\n\t\t{\n\t\t\t\"type\": \"section\",\n\t\t\t\"text\": {\n\t\t\t\t\"type\": \"mrkdwn\",\n\t\t\t\t\"text\": \"*📝 Blog構成案 (抜粋)*\\n\"\n\t\t\t}\n\t\t},\n\t\t{\n\t\t\t\"type\": \"section\",\n\t\t\t\"text\": {\n\t\t\t\t\"type\": \"mrkdwn\",\n\t\t\t\t\"text\": \"{{ $json.blog_content.slice(0, 500) }}...\\n_(長いため省略)_\"\n\t\t\t}\n\t\t},\n\t\t{\n\t\t\t\"type\": \"divider\"\n\t\t},\n\t\t{\n\t\t\t\"type\": \"section\",\n\t\t\t\"text\": {\n\t\t\t\t\"type\": \"mrkdwn\",\n\t\t\t\t\"text\": \"*📸 Instagram投稿案*\\n..\"\n\t\t\t}\n\t\t},\n\t\t{\n\t\t\t\"type\": \"divider\"\n\t\t},\n\t\t{\n\t\t\t\"type\": \"section\",\n\t\t\t\"text\": {\n\t\t\t\t\"type\": \"mrkdwn\",\n\t\t\t\t\"text\": \"*🎬 動画台本*\\n...\"\n\t\t\t}\n\t\t},\n\t\t{\n\t\t\t\"type\": \"actions\",\n\t\t\t\"elements\": [\n\t\t\t\t{\n\t\t\t\t\t\"type\": \"button\",\n\t\t\t\t\t\"text\": {\n\t\t\t\t\t\t\"type\": \"plain_text\",\n\t\t\t\t\t\t\"text\": \"✅ 承認して保存\",\n\t\t\t\t\t\t\"emoji\": true\n\t\t\t\t\t},\n\t\t\t\t\t\"style\": \"primary\",\n\t\t\t\t\t\"url\": \"{{ $execution.resumeUrl }}?action=approve\"\n\t\t\t\t},\n\t\t\t\t{\n\t\t\t\t\t\"type\": \"button\",\n\t\t\t\t\t\"text\": {\n\t\t\t\t\t\t\"type\": \"plain_text\",\n\t\t\t\t\t\t\"text\": \"🗑 却下\",\n\t\t\t\t\t\t\"emoji\": true\n\t\t\t\t\t},\n\t\t\t\t\t\"style\": \"danger\",\n\t\t\t\t\t\"url\": \"{{ $execution.resumeUrl }}?action=reject\"\n\t\t\t\t}\n\t\t\t]\n\t\t}\n\t]\n}",
+                "text": "=🚀 **新しいトレンドコンテンツが生成されました！**\n\n**選定トピック**: {{ $('AI Agent').item.json.output.selected_topic }}\n\n**📝 Blog構成案**:\n{{ $('AI Agent1').item.json.output }}\n\n**📸 Instagram案**:\n\n\n**🎬 Script案**:\n\n承認して投稿予約しますか？",
+                "otherOptions": {
+                    "link_names": false
+                }
+            },
+            "type": "n8n-nodes-base.slack",
+            "typeVersion": 2.4,
+            "position": [
+                1808,
+                -320
+            ],
+            "id": "cf8da122-66f7-48ee-8ae9-e610349fed72",
+            "name": "Send a message",
+            "webhookId": "eb2edbb3-288e-43d0-b40b-0590192d9331",
+            "credentials": {
+                "slackApi": {
+                    "id": "BrAdrR4v2B3hQpFR",
+                    "name": "Slack account"
+                }
+            }
+        },
+        {
+            "parameters": {
+                "resume": "webhook",
+                "options": {}
+            },
+            "type": "n8n-nodes-base.wait",
+            "typeVersion": 1.1,
+            "position": [
+                2032,
+                -320
+            ],
+            "id": "3686269e-618a-4216-9c2f-d0c0273a7669",
+            "name": "Wait",
+            "webhookId": "e01bcaa5-f10d-4b14-b2d0-85fc626fef77"
+        },
+        {
+            "parameters": {
+                "conditions": {
+                    "options": {
+                        "caseSensitive": true,
+                        "leftValue": "",
+                        "typeValidation": "strict",
+                        "version": 3
+                    },
+                    "conditions": [
+                        {
+                            "id": "1478bc25-b867-42ec-a0d6-a2fbff922252",
+                            "leftValue": "={{ $json.query.action }}",
+                            "rightValue": "approve",
+                            "operator": {
+                                "type": "string",
+                                "operation": "equals",
+                                "name": "filter.operator.equals"
+                            }
+                        }
+                    ],
+                    "combinator": "and"
+                },
+                "options": {}
+            },
+            "type": "n8n-nodes-base.if",
+            "typeVersion": 2.3,
+            "position": [
+                2240,
+                -320
+            ],
+            "id": "a7c11a0f-b0bb-45ca-a0e7-7927f99f053b",
+            "name": "If"
+        },
+        {
+            "parameters": {
+                "model": "z-ai/glm-4.5-air:free",
+                "options": {}
+            },
+            "type": "@n8n/n8n-nodes-langchain.lmChatOpenRouter",
+            "typeVersion": 1,
+            "position": [
+                928,
+                -144
+            ],
+            "id": "11eb22cd-5089-4c75-a76c-9dfdadc2b934",
+            "name": "OpenRouter Chat Model",
+            "credentials": {
+                "openRouterApi": {
+                    "id": "gSEqRINGzgQSF095",
+                    "name": "OpenRouter account"
+                }
+            }
+        },
+        {
+            "parameters": {
+                "schemaType": "manual",
+                "inputSchema": "{\n\t\"type\": \"object\",\n\t\"properties\": {\n\t\t\"selected_topic\": {\n\t\t\t\"type\": \"string\",\n            \"description\": \"選んだトピックのタイトル\"\n\t\t},\n      \t\t\"reason\": {\n\t\t\t\"type\": \"string\",\n            \"description\": \"なぜこれを選んだかの理由\"\n\t\t},\n      \t\t\"target_audience\": {\n\t\t\t\"type\": \"string\",\n            \"description\": \"ターゲット層\"\n\t\t}\n\t}\n}"
+            },
+            "type": "@n8n/n8n-nodes-langchain.outputParserStructured",
+            "typeVersion": 1.3,
+            "position": [
+                1072,
+                -144
+            ],
+            "id": "894b104f-130e-41d1-91bc-2206ba97efc4",
+            "name": "Structured Output Parser"
+        },
+        {
+            "parameters": {
+                "model": "z-ai/glm-4.5-air:free",
+                "options": {}
+            },
+            "type": "@n8n/n8n-nodes-langchain.lmChatOpenRouter",
+            "typeVersion": 1,
+            "position": [
+                1392,
+                -160
+            ],
+            "id": "b9e1321f-1ac2-4ece-8a9c-cb6a1bf2eb49",
+            "name": "OpenRouter Chat Model1",
+            "credentials": {
+                "openRouterApi": {
+                    "id": "gSEqRINGzgQSF095",
+                    "name": "OpenRouter account"
+                }
+            }
+        },
+        {
+            "parameters": {
+                "content": "## 気になったこと\n- AI agentじゃなくClasifier nodeで判定して、関連したものだけをBasic LLMに流すのじゃだめなのか？\n→ 処理が結構めんどくさかった\n- Slack→承認待ちのこのwaitが結構いいなこれ、保存しておくか",
+                "height": 336,
+                "width": 528
+            },
+            "type": "n8n-nodes-base.stickyNote",
+            "position": [
+                208,
+                -544
+            ],
+            "typeVersion": 1,
+            "id": "71919e2a-81b9-4225-9411-89ee2586545e",
+            "name": "Sticky Note"
+        },
+        {
+            "parameters": {
+                "url": "={{ $json.trendUrl }}",
+                "options": {}
+            },
+            "type": "n8n-nodes-base.httpRequest",
+            "typeVersion": 4.3,
+            "position": [
+                720,
+                -320
+            ],
+            "id": "a1b7c892-dcb3-4dd1-9cfe-ab1aa8cb02e6",
+            "name": "Fetch the Google trends"
+        },
+        {
+            "parameters": {
+                "jsCode": "const text = $input.first().json.output;\n\nfunction clean(text) {\n  if (!text) return \"生成エラー\";\n  return JSON.stringify(text).slice(1,-1)\n}\n\n// JSON.stringfyはオブジェクトや配列を、文字列に変換する役割\n// 文字列に使っても意味がない\n\nreturn {\n  blog_content: clean(text || \"データなし\")\n};"
+            },
+            "type": "n8n-nodes-base.code",
+            "typeVersion": 2,
+            "position": [
+                1568,
+                -320
+            ],
+            "id": "266f1ff9-2fb3-4993-bdbd-8b2a6135a4a2",
+            "name": "Code in JavaScript2"
+        }
+    ],
+    "connections": {
+        "When clicking ‘Execute workflow’": {
+            "main": [
+                [
+                    {
+                        "node": "Edit Fields",
+                        "type": "main",
+                        "index": 0
+                    }
+                ]
+            ]
+        },
+        "Edit Fields": {
+            "main": [
+                [
+                    {
+                        "node": "Fetch the Google trends",
+                        "type": "main",
+                        "index": 0
+                    }
+                ]
+            ]
+        },
+        "AI Agent": {
+            "main": [
+                [
+                    {
+                        "node": "AI Agent1",
+                        "type": "main",
+                        "index": 0
+                    }
+                ]
+            ]
+        },
+        "AI Agent1": {
+            "main": [
+                [
+                    {
+                        "node": "Code in JavaScript2",
+                        "type": "main",
+                        "index": 0
+                    }
+                ]
+            ]
+        },
+        "Send a message": {
+            "main": [
+                [
+                    {
+                        "node": "Wait",
+                        "type": "main",
+                        "index": 0
+                    }
+                ]
+            ]
+        },
+        "Wait": {
+            "main": [
+                [
+                    {
+                        "node": "If",
+                        "type": "main",
+                        "index": 0
+                    }
+                ]
+            ]
+        },
+        "If": {
+            "main": [
+                []
+            ]
+        },
+        "OpenRouter Chat Model": {
+            "ai_languageModel": [
+                [
+                    {
+                        "node": "AI Agent",
+                        "type": "ai_languageModel",
+                        "index": 0
+                    }
+                ]
+            ]
+        },
+        "Structured Output Parser": {
+            "ai_outputParser": [
+                [
+                    {
+                        "node": "AI Agent",
+                        "type": "ai_outputParser",
+                        "index": 0
+                    }
+                ]
+            ]
+        },
+        "OpenRouter Chat Model1": {
+            "ai_languageModel": [
+                [
+                    {
+                        "node": "AI Agent1",
+                        "type": "ai_languageModel",
+                        "index": 0
+                    }
+                ]
+            ]
+        },
+        "Fetch the Google trends": {
+            "main": [
+                [
+                    {
+                        "node": "AI Agent",
+                        "type": "main",
+                        "index": 0
+                    }
+                ]
+            ]
+        },
+        "Code in JavaScript2": {
+            "main": [
+                [
+                    {
+                        "node": "Send a message",
+                        "type": "main",
+                        "index": 0
+                    }
+                ]
+            ]
+        }
+    },
+    "pinData": {},
+    "meta": {
+        "templateCredsSetupCompleted": true,
+        "instanceId": "f07a7db4ed93e66e1e2d66a6dbb1b6f58e75dce88c79ca591af68b50df82ee3f"
+    }
+}
