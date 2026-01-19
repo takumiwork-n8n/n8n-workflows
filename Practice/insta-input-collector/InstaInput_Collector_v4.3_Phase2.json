@@ -1,0 +1,3694 @@
+{
+  "name": "InstaInput_Collector v4.3 (Phase 2 Agent)",
+  "nodes": [
+    {
+      "parameters": {
+        "pollTimes": {
+          "item": [
+            {
+              "mode": "everyX",
+              "value": 5,
+              "unit": "minutes"
+            }
+          ]
+        },
+        "documentId": {
+          "__rl": true,
+          "value": "1R7ifZxqvyoRAfRotAMqtvs3x0JU7st9VVw61kiY3qRE",
+          "mode": "list",
+          "cachedResultName": "【インスタ運用】分析",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1R7ifZxqvyoRAfRotAMqtvs3x0JU7st9VVw61kiY3qRE/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": 1310724637,
+          "mode": "list",
+          "cachedResultName": "Content Idea Input",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1R7ifZxqvyoRAfRotAMqtvs3x0JU7st9VVw61kiY3qRE/edit#gid=1310724637"
+        },
+        "event": "rowAdded",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheetsTrigger",
+      "typeVersion": 1,
+      "position": [
+        -208,
+        0
+      ],
+      "id": "bbeb0b8f-6cc5-445d-8498-8dc86a4cdcd3",
+      "name": "Trigger:FormInputs",
+      "credentials": {
+        "googleSheetsTriggerOAuth2Api": {
+          "id": "smB0OIidtId29srI",
+          "name": "Google Sheets Trigger account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "0b449d2f-7145-4404-9811-e60abbdc8221",
+              "name": "id",
+              "value": "={{ $json.row_number - 1 }} ",
+              "type": "number"
+            },
+            {
+              "id": "e2625cdf-acd4-43e6-b409-ba4f0fec5383",
+              "name": "created_at",
+              "value": "={{$now}}",
+              "type": "string"
+            },
+            {
+              "id": "dc473dab-543e-43b0-a92c-2f98101a5ecd",
+              "name": "raw_text",
+              "value": "={{ $json.Raw_text }}",
+              "type": "string"
+            },
+            {
+              "id": "ece7a5a3-ac12-4d40-b565-23f9a42af813",
+              "name": "url",
+              "value": "={{ $json.URL }}",
+              "type": "string"
+            },
+            {
+              "id": "cfcd7018-ec43-4329-86a1-6496e40f5d83",
+              "name": "trigger",
+              "value": "={{ $json.Trigger }}",
+              "type": "string"
+            },
+            {
+              "id": "0e32b356-a9e7-43d2-a57d-5fd4eb80b23b",
+              "name": "emotion",
+              "value": "={{ $json.Emotion }}",
+              "type": "string"
+            },
+            {
+              "id": "dd7046b7-8285-449f-af53-50304d566c89",
+              "name": "=Source",
+              "value": "={{ $json.Source }}",
+              "type": "string"
+            },
+            {
+              "id": "b4a24491-4e3c-4bf2-a6ca-b3837caa2d9e",
+              "name": "topic_tags",
+              "value": "",
+              "type": "string"
+            },
+            {
+              "id": "46e75283-9826-4cdc-941c-b153e9de5060",
+              "name": "post_hint",
+              "value": "",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        464,
+        0
+      ],
+      "id": "aff7281f-36b1-4d00-8113-66cabdd568d8",
+      "name": "Set:NormalizeData"
+    },
+    {
+      "parameters": {
+        "mode": "runOnceForEachItem",
+        "jsCode": "const url = $json.url ?? '';\nif (url && url.length > 5) {\n  return { ...$json, dedupe_key: url };\n}\n\nconst raw = ($json.raw_text ?? '').toString().trim();\nconst trig = ($json.trigger ?? '').toString().trim();\nconst emo  = ($json.emotion ?? '').toString().trim();\nconst src  = ($json.source ?? '').toString().trim();\n\nconst dedupe_key = [src, raw, trig, emo].join('||');\n\nreturn { ...$json, dedupe_key };\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        656,
+        0
+      ],
+      "id": "f5e0ce4d-4c29-4531-95c4-49492ce08a8e",
+      "name": "Code:DedupeKey"
+    },
+    {
+      "parameters": {
+        "documentId": {
+          "__rl": true,
+          "value": "1R7ifZxqvyoRAfRotAMqtvs3x0JU7st9VVw61kiY3qRE",
+          "mode": "list",
+          "cachedResultName": "【インスタ運用】分析",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1R7ifZxqvyoRAfRotAMqtvs3x0JU7st9VVw61kiY3qRE/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": 1251414454,
+          "mode": "list",
+          "cachedResultName": "Content_ideas",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1R7ifZxqvyoRAfRotAMqtvs3x0JU7st9VVw61kiY3qRE/edit#gid=1251414454"
+        },
+        "filtersUI": {
+          "values": [
+            {
+              "lookupColumn": "dedupe_key",
+              "lookupValue": "={{$json.dedupe_key}}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        928,
+        -96
+      ],
+      "id": "61246752-4cda-47db-9f59-c2d0a1da7e8f",
+      "name": "Lookup:ExistingIdea",
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "jCcTEIaZJkIql5yt",
+          "name": "Google Sheets account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "append",
+        "documentId": {
+          "__rl": true,
+          "value": "1R7ifZxqvyoRAfRotAMqtvs3x0JU7st9VVw61kiY3qRE",
+          "mode": "list",
+          "cachedResultName": "【インスタ運用】分析",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1R7ifZxqvyoRAfRotAMqtvs3x0JU7st9VVw61kiY3qRE/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": 1251414454,
+          "mode": "list",
+          "cachedResultName": "Content_ideas",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1R7ifZxqvyoRAfRotAMqtvs3x0JU7st9VVw61kiY3qRE/edit#gid=1251414454"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "id": "={{$json.id}}",
+            "created_at": "={{$json.created_at}}",
+            "source": "={{$json.Source}}",
+            "url": "={{$json.url}}",
+            "raw_text": "={{$json.raw_text}}",
+            "status": "new",
+            "trigger": "={{ $json.trigger }}",
+            "emotion": "={{ $json.emotion }}",
+            "dedupe_key": "={{ $json.dedupe_key }}"
+          },
+          "matchingColumns": [
+            "id"
+          ],
+          "schema": [
+            {
+              "id": "id",
+              "displayName": "id",
+              "required": false,
+              "defaultMatch": true,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "created_at",
+              "displayName": "created_at",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "source",
+              "displayName": "source",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "url",
+              "displayName": "url",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "raw_text",
+              "displayName": "raw_text",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "trigger",
+              "displayName": "trigger",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "emotion",
+              "displayName": "emotion",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "dedupe_key",
+              "displayName": "dedupe_key",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "pain_point",
+              "displayName": "pain_point",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "misconception",
+              "displayName": "misconception",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "hooks",
+              "displayName": "hooks",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "carousel_outline",
+              "displayName": "carousel_outline",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "reel_script",
+              "displayName": "reel_script",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "score_save",
+              "displayName": "score_save",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "score_repro",
+              "displayName": "score_repro",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "score_novel",
+              "displayName": "score_novel",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "score_total",
+              "displayName": "score_total",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "status",
+              "displayName": "status",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Search_prompt",
+              "displayName": "Search_prompt",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "updated_at",
+              "displayName": "updated_at",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "human_decision",
+              "displayName": "human_decision",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "Search_content",
+              "displayName": "Search_content",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "Threads_Output",
+              "displayName": "Threads_Output",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "Carousel_structure",
+              "displayName": "Carousel_structure",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "Carousel_output",
+              "displayName": "Carousel_output",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        1408,
+        -16
+      ],
+      "id": "293a423f-c93c-4d89-9da5-44fb8508ceef",
+      "name": "Append:InitialIdea",
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "jCcTEIaZJkIql5yt",
+          "name": "Google Sheets account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "documentId": {
+          "__rl": true,
+          "value": "1R7ifZxqvyoRAfRotAMqtvs3x0JU7st9VVw61kiY3qRE",
+          "mode": "list",
+          "cachedResultName": "【インスタ運用】分析",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1R7ifZxqvyoRAfRotAMqtvs3x0JU7st9VVw61kiY3qRE/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": 1310724637,
+          "mode": "list",
+          "cachedResultName": "Content Idea Input",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1R7ifZxqvyoRAfRotAMqtvs3x0JU7st9VVw61kiY3qRE/edit#gid=1310724637"
+        },
+        "options": {
+          "dataLocationOnSheet": {
+            "values": {
+              "rangeDefinition": "detectAutomatically"
+            }
+          }
+        }
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        32,
+        0
+      ],
+      "id": "15766b78-8ecc-4cd6-96d3-34473fa18724",
+      "name": "Get:RowData",
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "jCcTEIaZJkIql5yt",
+          "name": "Google Sheets account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "mode": "combine",
+        "fieldsToMatchString": "dedupe_key",
+        "joinMode": "keepNonMatches",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.merge",
+      "typeVersion": 3.2,
+      "position": [
+        1184,
+        -16
+      ],
+      "id": "922d9ece-c4ae-4a0a-9bd8-f5a1abf91429",
+      "name": "Logic:MergeNew"
+    },
+    {
+      "parameters": {
+        "keep": "lastItems"
+      },
+      "type": "n8n-nodes-base.limit",
+      "typeVersion": 1,
+      "position": [
+        240,
+        0
+      ],
+      "id": "adefc1fc-5441-4384-a84c-05a6e627b367",
+      "name": "Limit:1Item"
+    },
+    {
+      "parameters": {},
+      "type": "n8n-nodes-base.manualTrigger",
+      "typeVersion": 1,
+      "position": [
+        64,
+        -288
+      ],
+      "id": "af642734-0c2a-47f8-8f40-c128d442b8f8",
+      "name": "When clicking ‘Execute workflow’",
+      "disabled": true
+    },
+    {
+      "parameters": {
+        "operation": "update",
+        "documentId": {
+          "__rl": true,
+          "value": "1R7ifZxqvyoRAfRotAMqtvs3x0JU7st9VVw61kiY3qRE",
+          "mode": "list",
+          "cachedResultName": "【インスタ運用】分析",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1R7ifZxqvyoRAfRotAMqtvs3x0JU7st9VVw61kiY3qRE/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": 1251414454,
+          "mode": "list",
+          "cachedResultName": "Content_ideas",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1R7ifZxqvyoRAfRotAMqtvs3x0JU7st9VVw61kiY3qRE/edit#gid=1251414454"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "status": "new",
+            "id": "={{ $('Append:InitialIdea').item.json.id }}",
+            "pain_point": "={{ $('LLM:EditorScoring').item.json.output.pain_point }}",
+            "misconception": "={{ $('LLM:EditorScoring').item.json.output.misconception }}",
+            "hooks": "={{ $('LLM:EditorScoring').item.json.output.hooks }}",
+            "score_save": "={{ $('LLM:EditorScoring').item.json.output.score_save }}",
+            "score_repro": "={{ $('LLM:EditorScoring').item.json.output.score_repro }}",
+            "score_novel": "={{ $('LLM:EditorScoring').item.json.output.score_novel }}",
+            "score_total": "={{ $('Logic:CalcScore').item.json.Score_total }}",
+            "Search_prompt": "={{ $json.output.search_prompt }}"
+          },
+          "matchingColumns": [
+            "id"
+          ],
+          "schema": [
+            {
+              "id": "id",
+              "displayName": "id",
+              "required": false,
+              "defaultMatch": true,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "created_at",
+              "displayName": "created_at",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "source",
+              "displayName": "source",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "url",
+              "displayName": "url",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "raw_text",
+              "displayName": "raw_text",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "trigger",
+              "displayName": "trigger",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "emotion",
+              "displayName": "emotion",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "dedupe_key",
+              "displayName": "dedupe_key",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "pain_point",
+              "displayName": "pain_point",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "misconception",
+              "displayName": "misconception",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "hooks",
+              "displayName": "hooks",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "carousel_outline",
+              "displayName": "carousel_outline",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "reel_script",
+              "displayName": "reel_script",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "score_save",
+              "displayName": "score_save",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "score_repro",
+              "displayName": "score_repro",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "score_novel",
+              "displayName": "score_novel",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "score_total",
+              "displayName": "score_total",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "status",
+              "displayName": "status",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Search_prompt",
+              "displayName": "Search_prompt",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "updated_at",
+              "displayName": "updated_at",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "human_decision",
+              "displayName": "human_decision",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "Search_content",
+              "displayName": "Search_content",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "Threads_Output",
+              "displayName": "Threads_Output",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "row_number",
+              "displayName": "row_number",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "number",
+              "canBeUsedToMatch": true,
+              "readOnly": true,
+              "removed": true
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        992,
+        544
+      ],
+      "id": "ba9b8f22-e6f7-49a4-a85b-bffb2d214afd",
+      "name": "Update:StatusNew",
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "jCcTEIaZJkIql5yt",
+          "name": "Google Sheets account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "fc52a943-0702-4225-8a18-844f0a8b6b8f",
+              "name": "Score_total",
+              "value": "={{\n  Math.round(\n    (\n      (\n        ($json.output.score_save * 0.5) +\n        ($json.output.score_repro * 0.3) +\n        ($json.output.score_novel * 0.2)\n      )\n      * ($json.output.score_relevance / 5)\n    ) * 10\n  ) / 10\n}}\n",
+              "type": "number"
+            },
+            {
+              "id": "7209dd02-43ae-4b58-9c1b-0165154f8162",
+              "name": "pain_point",
+              "value": "={{ $json.output.pain_point }}",
+              "type": "string"
+            },
+            {
+              "id": "ec07a83f-a9ca-4810-92b6-9d1c4acd5823",
+              "name": "misconception",
+              "value": "={{ $json.output.misconception }}",
+              "type": "string"
+            },
+            {
+              "id": "b7fe8991-4084-41ee-86cd-9a97b6253269",
+              "name": "main_topic",
+              "value": "={{ $json.output.main_topic }}",
+              "type": "string"
+            },
+            {
+              "id": "401f1bac-3e93-4f6c-b746-a39771d7475f",
+              "name": "persona_concern",
+              "value": "={{ $('Gemini:PersonaInsight').item.json.output.persona_concern }}",
+              "type": "string"
+            },
+            {
+              "id": "c5fa74d5-4a14-49b2-926c-42a755465b66",
+              "name": "persona_emtoion",
+              "value": "={{ $('Gemini:PersonaInsight').item.json.output.persona_emotion }}",
+              "type": "string"
+            },
+            {
+              "id": "dbf1da4d-8835-438b-a8e3-5c7c3a7dbaa6",
+              "name": "hooks",
+              "value": "={{ $('Gemini:PersonaInsight').item.json.output.hooks }}",
+              "type": "array"
+            },
+            {
+              "id": "834ecb71-b3be-49ed-8ed2-cdd65a54fa40",
+              "name": "search_prompt",
+              "value": "={{ $('Gemini:PersonaInsight').item.json.output.search_prompt }}",
+              "type": "string"
+            }
+          ]
+        },
+        "includeOtherFields": true,
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        544,
+        400
+      ],
+      "id": "74e2e187-d444-4f9e-8ca5-54ef4357daf8",
+      "name": "Logic:CalcScore"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 3
+          },
+          "conditions": [
+            {
+              "id": "72d9c21c-9e1e-4d3e-a518-865ba85563af",
+              "leftValue": "={{ $json.Score_total >= 2 }}",
+              "rightValue": 0,
+              "operator": {
+                "type": "boolean",
+                "operation": "true",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.3,
+      "position": [
+        768,
+        400
+      ],
+      "id": "dcbf7e9c-c5c7-4656-a443-eec27340d24a",
+      "name": "Gate:ScoreCheck"
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=メイントピック：\n{{ $('LLM:EditorScoring').item.json.output.main_topic }}\n\n読者の感情:\n{{ $('Logic:CalcScore').item.json.persona_emtoion }}\n\n読者の痛み：\n{{ $json.pain_point }}\n\n読者の悩み:\n{{ $('Logic:CalcScore').item.json.persona_concern }}\n\nよくある誤解：\n{{ $json.misconception }}\n\n元の投稿内容:\n{{ $('Append:InitialIdea').item.json.raw_text }}\n\nフック候補：\n{{ $json.hooks }}\n──────────────────\n【調査情報（Perplexity）】\n{{ $json.Search_content }}",
+        "messages": {
+          "messageValues": [
+            {
+              "message": "# Instagramカルーセル投稿 作成ルール（編集者用・System）\n\nあなたは **日本人向けSNSを専門にするプロの編集者** です。\n日本語ネイティブとして、**Instagramカルーセル専用の文章**のみを書きます。\n\n以下を厳守してください。\n\n---\n\n## 言語・表現ルール（最重要）\n\n* 翻訳調・AI臭・論文調・説明書調は禁止\n* 「です／ます」多用・硬い敬語は禁止\n* 造語・横文字・専門用語は禁止\n  ※使う場合は中学生でも分かる言葉に言い換えること\n* 日本人がSNSで自然に使うテンポ・言い回しにする\n\n---\n\n## 必須参照情報\n\n以下を **必ず材料として使うこと**\n\n* メイントピック\n* 読者の悩み・痛み・勘違い\n* リサーチで得られた事実情報\n* 元の投稿内容（文脈・誤解されやすい表現）\n\n---\n\n## 投稿の目的\n\nこのカルーセルは\n**読者の「悩み・痛み・勘違い」のどれか1つを確実に解消する**\nために作られる。\n\n---\n\n## 絶対条件\n\n以下の3つが **そのまま使われていない投稿は失格**。\n\n* 今回のメイントピック\n* 元の投稿内容の主張・表現\n* リサーチで得られた具体的事実\n\n---\n\n## 禁止事項\n\n以下だけで構成された投稿は禁止。\n\n* AIは万能ではない\n* 賢く使うことが大事\n* 便利になります\n\n---\n\n## 出力条件\n\n* 出力は **Instagramカルーセル用テキストのみ**\n* 前置き・解説・注意書き・メタ発言は禁止\n* 各スライドは「見出しと内容に分ける」構成\n* 各スライド：100〜140文字\n\n---\n\n## 最終自己チェック\n\n出力前に必ず確認せよ。\n\n> 「このカルーセルは、今回のインプットがなければ書けないか？」\n"
+            },
+            {
+              "type": "HumanMessagePromptTemplate",
+              "message": "=以下のルールを**すべて厳守**して、\n**Instagramカルーセル投稿**を作成してください。\n\n──────────────────\n\n## 【カルーセル投稿条件】\n\n* 枚数：**7〜9枚**\n* 1枚＝**1メッセージのみ**（情報の詰め込み禁止）\n* スマホで読みやすい改行を使う\n* 絵文字：**全体で最大2個まで**\n* 各スライド：100〜140文字\n* 各スライドは見出しと内容に文章を分ける\n\n──────────────────\n\n## 【必須思考プロセス（省略禁止）】\n\n1. 元の投稿内容の中から\n   **最も「盛られている／誤解されやすい表現」**を1つ特定する\n2. それに対して\n   **初心者が現実で必ずつまずくポイント**を1つ決める\n3. そのギャップを\n   **リサーチで得られた事実情報のみ**を使って説明する\n4. 読者が\n   **今日すぐ試せる行動**を1つに絞る\n\n※ 推測・想像・一般論で補完することは禁止\n\n──────────────────\n\n## 【生成ルール】\n\n* フックは**フック候補の中から1つのみ**選ぶ\n* ノウハウ自慢・網羅型は禁止\n* 読者目線・感情ベースで書く\n* **1カルーセル＝1テーマ完結**\n\n──────────────────\n\n## 【出力形式（必ず厳守）】\n\nスライド1：\n本文\n\nスライド2：\n本文\n\nスライド3：\n本文\n\n※ 最後のスライドまでこの形式で出力\n"
+            }
+          ]
+        },
+        "batching": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.chainLlm",
+      "typeVersion": 1.8,
+      "position": [
+        464,
+        1184
+      ],
+      "id": "399e8d56-475f-423f-8929-2b252e27736f",
+      "name": "Deprecated:GenCarousel",
+      "disabled": true
+    },
+    {
+      "parameters": {
+        "operation": "update",
+        "documentId": {
+          "__rl": true,
+          "value": "1R7ifZxqvyoRAfRotAMqtvs3x0JU7st9VVw61kiY3qRE",
+          "mode": "list",
+          "cachedResultName": "【インスタ運用】分析",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1R7ifZxqvyoRAfRotAMqtvs3x0JU7st9VVw61kiY3qRE/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": 1251414454,
+          "mode": "list",
+          "cachedResultName": "Content_ideas",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1R7ifZxqvyoRAfRotAMqtvs3x0JU7st9VVw61kiY3qRE/edit#gid=1251414454"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "status": "triage",
+            "id": "={{ $('Append:InitialIdea').item.json.id }}",
+            "pain_point": "={{ $('LLM:EditorScoring').item.json.output.pain_point }}",
+            "misconception": "={{ $('LLM:EditorScoring').item.json.output.misconception }}",
+            "hooks": "={{ $('LLM:EditorScoring').item.json.output.hooks }}",
+            "score_repro": "={{ $('LLM:EditorScoring').item.json.output.score_repro }}",
+            "score_novel": "={{ $('LLM:EditorScoring').item.json.output.score_novel }}",
+            "score_total": "={{ $('Gate:ScoreCheck').item.json.Score_total }}",
+            "score_save": "={{ $('LLM:EditorScoring').item.json.output.score_save }}",
+            "Search_prompt": "={{ $('Gate:ScoreCheck').item.json.output.search_prompt }}",
+            "Search_content": "={{ $json.choices[0].message.content }}"
+          },
+          "matchingColumns": [
+            "id"
+          ],
+          "schema": [
+            {
+              "id": "id",
+              "displayName": "id",
+              "required": false,
+              "defaultMatch": true,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "created_at",
+              "displayName": "created_at",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "source",
+              "displayName": "source",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "url",
+              "displayName": "url",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "raw_text",
+              "displayName": "raw_text",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "trigger",
+              "displayName": "trigger",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "emotion",
+              "displayName": "emotion",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "dedupe_key",
+              "displayName": "dedupe_key",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "pain_point",
+              "displayName": "pain_point",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "misconception",
+              "displayName": "misconception",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "hooks",
+              "displayName": "hooks",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "carousel_outline",
+              "displayName": "carousel_outline",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "reel_script",
+              "displayName": "reel_script",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "score_save",
+              "displayName": "score_save",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "score_repro",
+              "displayName": "score_repro",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "score_novel",
+              "displayName": "score_novel",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "score_total",
+              "displayName": "score_total",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "status",
+              "displayName": "status",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Search_prompt",
+              "displayName": "Search_prompt",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "updated_at",
+              "displayName": "updated_at",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "human_decision",
+              "displayName": "human_decision",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "Search_content",
+              "displayName": "Search_content",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "Threads_Output",
+              "displayName": "Threads_Output",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "Carousel_OutPut",
+              "displayName": "Carousel_OutPut",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "row_number",
+              "displayName": "row_number",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "number",
+              "canBeUsedToMatch": true,
+              "readOnly": true,
+              "removed": true
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        1184,
+        320
+      ],
+      "id": "c93f21e5-031c-41f6-8d71-2052f28c9308",
+      "name": "Update:StatusTriage",
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "jCcTEIaZJkIql5yt",
+          "name": "Google Sheets account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=メイントピック：\n{{ $('LLM:EditorScoring').item.json.output.main_topic }}\n\n読者の感情:\n{{ $('Logic:CalcScore').item.json.persona_emtoion }}\n\n読者の痛み：\n{{ $json.pain_point }}\n\n読者の悩み:\n{{ $('Logic:CalcScore').item.json.persona_concern }}\n\nよくある誤解：\n{{ $json.misconception }}\n\n元の投稿内容:\n{{ $('Append:InitialIdea').item.json.raw_text }}\n\nフック候補：\n{{ $json.hooks }}\n──────────────────\n【調査情報（Perplexity）】\n{{ $json.Search_content }}",
+        "messages": {
+          "messageValues": [
+            {
+              "message": "=# Threads投稿 作成ルール（編集者用）\n\nあなたは **日本人のプロのThreads投稿の編集者** です。  \n日本度ネイティブとして日本のThreadsに向けた投稿のみを書きます。\n造語、翻訳調、説明調、論文長は禁止です。\n以下の情報を **必ず参考にして** 投稿本文を作成してください。\n\n---\n\n## 必須参照情報\n\n- **メイントピック**\n- **読者の悩み・痛み・よくある勘違い**\n- **リサーチで得られた事実情報**\n- **元の投稿内容（文脈・主張・言い回し）**\n\n---\n\n## 投稿の目的\n\n投稿は、  \n**読者の「悩み・痛み・勘違い」のいずれか1つを解消すること**  \nを目的にしてください。\n\n---\n\n## 重要ルール（厳守）\n\n- メイントピックとリサーチ内容を軸に書くこと  \n- 元の投稿内容から逸脱しないこと  \n- 推測や想像で情報を補わないこと  \n- 専門用語は使わない  \n  - 使う場合は **必ず噛み砕いて説明すること**\n---\n\n## 出力条件\n\n- 出力は **Threads投稿本文のみ**\n- 前置き・解説・補足・注釈は **一切書かない**\n- 読者が **「自分のことだ」** と感じる流れを意識する\n- **汎用的なAI活用投稿は禁止**\n\n---\n\n## 絶対条件\n\n以下の3点を  \n**「そのまま使わないと成立しない内容」** にすること。\n\n- 今回のメイントピック  \n- 元の投稿内容  \n- リサーチで得られた具体的事実  \n\n---\n\n## 禁止事項\n\n以下のような **どのAI投稿にも当てはまる表現だけ** で構成しないこと。\n\n- AIは万能ではない  \n- 賢く使うことが大事  \n- 便利になる  \n\n---\n\n## 最終チェック\n\n執筆後、必ず次の問いで自己チェックしてください。\n\n> **「この投稿は、今回のインプットでしか書けないか？」**\n"
+            },
+            {
+              "type": "HumanMessagePromptTemplate",
+              "message": "=## 【投稿条件】\n\n* **文字数**：200〜350字\n* **改行**：多め（スマホで読みやすく）\n* **1行目**：フック必須\n* **絵文字**：最大3つまで\n\n---\n\n## 【執筆ルール】\n\n* メイントピックと**リサーチ内容を必ず元にする**\n* 読者の\n  **「悩み・痛み・勘違い」のいずれか1つを解消する**\n* **ステップは最大3つ**\n* 専門用語は使わない\n  （使う場合は必ず噛み砕く）\n* 推測で情報を補わない\n\n\n---\n\n## 【必須思考プロセス】\n\n1. 元の投稿で\n   **一番「盛っている／誤解されやすい表現」**を1つ選ぶ\n2. それに対して\n   **初心者が現実でつまずくポイント**を1つ決める\n3. そのギャップを\n   **リサーチ事実を使って説明する**\n4. **今日すぐ試せる行動**を1つに絞る\n\n---\n\n## 【構成ルール】\n\n以下のテンプレから**1つだけ**選んで書く\n（迷ったら **テンプレ①**）\n\n* テンプレ①：王道・保存量産型\n* テンプレ②：初心者教育型\n* テンプレ③：AI副業連想型\n* テンプレ④：ノウハウ暴露型\n* テンプレ⑤：超ライト型\n\n**最後は必ず**\n👉 **「行動を促す or 保存を促す一文」**で締める\n\n---\n\n# Threads投稿｜構成テンプレ集（完全版）\n\n---\n\n## 構成テンプレ①｜王道・保存量産型（最優先）\n\n**構成**\n\n1. フック（損失・不安・勘違い）\n2. 問題提起（初心者のつまずき）\n3. 勘違いの否定（実は〇〇じゃない）\n4. 解決策の提示（AI／方法は1つ）\n5. 超具体ステップ（最大3ステップ）\n6. ベネフィット列挙（楽・早・簡単）\n7. 共感 or 本音\n8. 行動促進（まずはこれだけ）\n9. 保存訴求\n\n---\n\n## 構成テンプレ②｜初心者教育・理解促進型\n\n**構成**\n\n1. フック（〇〇できない人へ）\n2. 初心者あるある提示\n3. 原因の言語化\n4. シンプルな結論\n5. AI活用例（1つ）\n6. 実際の使い方（箇条書き）\n7. 得られる変化\n8. 今すぐできる一歩\n9. 保存訴求\n\n---\n\n## 構成テンプレ③｜AI副業・収益連想型\n\n**構成**\n\n1. フック（お金 × AI）\n2. できない理由の誤解\n3. 視点の切り替え\n4. 稼ぎにつながる行動提示\n5. AIの使い所\n6. 具体作業イメージ\n7. 再現性の強調\n8. 今日やること\n9. 保存 or 実践促進\n\n---\n\n## 構成テンプレ④｜ノウハウ暴露・強訴求型\n\n**構成**\n\n1. 強フック（実は〇〇）\n2. 常識否定\n3. 本当のポイント\n4. AI活用の核心\n5. 具体例\n6. 得られる結果\n7. 注意点（1つ）\n8. 行動促進\n9. 保存訴求\n\n---\n\n## 構成テンプレ⑤｜超ライト・即行動型（短文）\n\n**構成**\n\n1. フック（1文）\n2. 結論\n3. やり方（3行以内）\n4. 効果\n5. 今日やること\n6. 保存\n\n---\n\n## 【共通ルール（重要）】\n\n* 1投稿＝1テーマ完結\n* AIツールは**必ず1つだけ**\n* ステップは最大3つ\n* 最後は必ず\n  **「行動 or 保存」**で締める\n* 中学生でも理解できるような文章（専門用語NG）\n\n---\n\n## 【おすすめ使い分け】\n\n* 迷ったら → **構成①**\n* 信頼構築 → **構成②**\n* 副業導線 → **構成③**\n* 拡散狙い → **構成④**\n* 毎日投稿 → **構成⑤**\n"
+            }
+          ]
+        },
+        "batching": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.chainLlm",
+      "typeVersion": 1.8,
+      "position": [
+        480,
+        832
+      ],
+      "id": "6fafb7d1-20e6-4a41-b8dd-e2b35921c737",
+      "name": "Deprecated:GenThreads",
+      "disabled": true
+    },
+    {
+      "parameters": {
+        "modelName": "models/gemini-3-flash-preview",
+        "options": {
+          "temperature": 0.7
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatGoogleGemini",
+      "typeVersion": 1,
+      "position": [
+        480,
+        976
+      ],
+      "id": "906d0f4f-ec28-4c2a-8365-ee2ccaa502c4",
+      "name": "LLM:GenThreads",
+      "credentials": {
+        "googlePalmApi": {
+          "id": "VMovp80EJUN99Cny",
+          "name": "Google Gemini(PaLM) Api paid"
+        }
+      },
+      "disabled": true
+    },
+    {
+      "parameters": {
+        "schemaType": "manual",
+        "inputSchema": "{\n  \"$schema\": \"http://json-schema.org/draft-07/schema#\",\n  \"type\": \"object\",\n  \"required\": [\"hooks\"],\n  \"additionalProperties\": false,\n  \"properties\": {\n    \"hooks\": {\n      \"type\": \"array\",\n      \"minItems\": 1,\n      \"items\": {\n        \"type\": \"object\",\n        \"required\": [\n          \"hook_phrase\",\n          \"hook_words\",\n          \"emotion\",\n          \"psych_effect\",\n          \"use_case\",\n          \"risk_level\",\n          \"notes\",\n          \"example_output\"\n        ],\n        \"additionalProperties\": false,\n        \"properties\": {\n          \"hook_phrase\": {\n            \"type\": \"string\"\n          },\n          \"hook_words\": {\n            \"type\": \"array\",\n            \"items\": {\n              \"type\": \"string\"\n            }\n          },\n          \"emotion\": {\n            \"type\": \"string\"\n          },\n          \"psych_effect\": {\n            \"type\": \"array\",\n            \"items\": {\n              \"type\": \"string\"\n            }\n          },\n          \"use_case\": {\n            \"type\": \"string\"\n          },\n          \"risk_level\": {\n            \"type\": \"number\"\n          },\n          \"notes\": {\n            \"type\": \"string\"\n          },\n          \"example_output\": {\n            \"type\": \"string\"\n          }\n        }\n      }\n    }\n  }\n}\n"
+      },
+      "type": "@n8n/n8n-nodes-langchain.outputParserStructured",
+      "typeVersion": 1.3,
+      "position": [
+        784,
+        -416
+      ],
+      "id": "8ed75085-0107-473d-ab06-d1297127bb9d",
+      "name": "Deprecated:Parser",
+      "disabled": true
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "118904a2-27c2-4428-8dc8-06782671f37b",
+              "name": "hook_id",
+              "value": "={{ Date.now() }}",
+              "type": "string"
+            },
+            {
+              "id": "e962fa69-a6cc-44e2-b367-34c356255e50",
+              "name": "platform",
+              "value": "={{ $('Set:NormalizeData').item.json.Source }}",
+              "type": "string"
+            },
+            {
+              "id": "0101157d-fef5-4aeb-aee5-3de1c8a67bfc",
+              "name": "hook_phrase",
+              "value": "={{ ($json['output.hooks'].hook_phrase || []) }}",
+              "type": "string"
+            },
+            {
+              "id": "2db45c40-d700-4818-998e-031808ca9a85",
+              "name": "hook_words",
+              "value": "={{ ($json['output.hooks'].hook_words || []).join(\",\") }}",
+              "type": "string"
+            },
+            {
+              "id": "870dc37d-eedb-4192-a864-896e845c898d",
+              "name": "emotion",
+              "value": "={{ $json['output.hooks'].emotion }}",
+              "type": "string"
+            },
+            {
+              "id": "0d654b13-a848-4527-b7d2-7b92dd7c1994",
+              "name": "psych_effect",
+              "value": "={{ ( $json['output.hooks'].psych_effect|| []).join(\",\") }}",
+              "type": "string"
+            },
+            {
+              "id": "2933798f-c467-42d7-a099-7a90a7b7c9dc",
+              "name": "use_case",
+              "value": "={{ $json['output.hooks'].use_case }}",
+              "type": "string"
+            },
+            {
+              "id": "41c46e2f-d7f8-4fef-aabf-34ba9b96e465",
+              "name": "risk_level",
+              "value": "={{ $json['output.hooks'].risk_level }}",
+              "type": "number"
+            },
+            {
+              "id": "a28f3957-967f-4dc7-b834-c1e251ff3fff",
+              "name": "notes",
+              "value": "={{ $json['output.hooks'].notes }}",
+              "type": "string"
+            },
+            {
+              "id": "af441410-79e5-45e9-b38d-eac2178a556f",
+              "name": "example_output",
+              "value": "={{ $json['output.hooks'].example_output }}",
+              "type": "string"
+            },
+            {
+              "id": "af7da199-381c-4e71-b124-7bfe9c975511",
+              "name": "created_at",
+              "value": "={{ $now }}",
+              "type": "string"
+            },
+            {
+              "id": "6ac75a18-17e7-4ed8-8f83-a7fd53b5f431",
+              "name": "rag_text:",
+              "value": "={{ $('Set:NormalizeData').item.json.Source }},{{ ($json['output.hooks'].hook_phrase || []) }}, {{ ($json['output.hooks'].hook_words || []).join(\",\") }}, {{ $json['output.hooks'].emotion }},{{ ( $json['output.hooks'].psych_effect|| []).join(\",\") }},{{ $json['output.hooks'].use_case }} ",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        1136,
+        -608
+      ],
+      "id": "cc0b5a20-5591-4a62-be24-f68a05eed575",
+      "name": "Deprecated:EditFields",
+      "disabled": true
+    },
+    {
+      "parameters": {
+        "fieldToSplitOut": "output.hooks",
+        "include": "allOtherFields",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.splitOut",
+      "typeVersion": 1,
+      "position": [
+        944,
+        -608
+      ],
+      "id": "a4cde462-a1f8-4847-b65d-6eeba7745175",
+      "name": "Deprecated:SplitOut",
+      "disabled": true
+    },
+    {
+      "parameters": {
+        "content": "## 競合の分析とテンプレ作成\n\n**Double click** to edit me. [Guide](https://docs.n8n.io/workflows/components/sticky-notes/)",
+        "height": 480,
+        "width": 1424
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        544,
+        -720
+      ],
+      "typeVersion": 1,
+      "id": "65cf953b-1a7a-45d0-8f1f-6af10b65946d",
+      "name": "Sticky Note"
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=## 目的／ゴール\n入力として与えられた競合投稿情報をもとに、  \n**冒頭にそのまま使える、または微調整して使えるフック文言を最大3つ抽出**し、  \n心理的効果・リスク・活用意図が分かる形で構造化して出力すること。\n\n## 背景情報\n- 対象プラットフォームは{#入力}を参照する\n- 投稿の本文・URL・感情トーン・トピックタグが入力として与えられる  \n- フックは「最初の1行で続きを読みたくさせる表現」を指す  \n- 競合分析用途のため、**過度な誇張・炎上リスクも評価対象**とする  \n\n## 条件・制約\n- 出力は**必ずJSONのみ**とする（説明文・補足文は禁止）\n- hooksは**配列**で、最大3件まで\n- 各hookには以下の情報を含めること  \n  - hook_phrase：冒頭フック文（短文）\n  - hook_words：フックの核となる単語・フレーズ配列\n  - emotion：想定される主感情（1つ）\n  - psych_effect：心理効果（1〜2個）\n  - use_case：以下から必ず1つ選択  \n    - 教育｜比較｜失敗談｜注意喚起｜手順\n  - risk_level：1〜5の整数（炎上・誤解・誇張リスク）\n  - notes：編集者視点での注意点や補足\n  - example_output：実際のInstagram投稿冒頭例\n- 入力内容を**要約・改変しすぎず**、競合投稿の構造や言い回しを活かす\n- 不明な情報は推測してよいが、過度な断定は禁止\n\n## 入力\nplatform: {{ $json.Source }}\ntext: {{ $json.raw_text }}\nsource_url: {{ $json.url }}\nemotion_hint: {{ $json.emotion }}\ntopic_tags: {{ $json.topic_tags }}\n",
+        "hasOutputParser": true,
+        "messages": {
+          "messageValues": [
+            {
+              "message": "## 役割 \nあなたはSNS投稿の**プロ編集者**であり、競合投稿を分析して「冒頭で読者の注意を引くフック表現」を抽出・整理する専門家である。"
+            },
+            {
+              "type": "AIMessagePromptTemplate",
+              "message": "{   \"hooks\": [     {       \"hook_phrase\": \"\",       \"hook_words\": [],       \"emotion\": \"\",       \"psych_effect\": [],       \"use_case\": \"教育|比較|失敗談|注意喚起|手順\",       \"risk_level\": 1,       \"notes\": \"\",       \"example_output\": \"\"     }   ] }"
+            }
+          ]
+        },
+        "batching": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.chainLlm",
+      "typeVersion": 1.8,
+      "position": [
+        640,
+        -608
+      ],
+      "id": "a4bb3fa4-aa42-4723-afad-ca460dd28937",
+      "name": "Deprecated:Analyze",
+      "disabled": true
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 3
+          },
+          "conditions": [
+            {
+              "id": "c2c0c7cf-20e6-4b35-9d0b-1b02075acfea",
+              "leftValue": "={{ $items().length }}",
+              "rightValue": 0,
+              "operator": {
+                "type": "number",
+                "operation": "gt"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.3,
+      "position": [
+        1552,
+        -608
+      ],
+      "id": "30ac4aab-2b6b-4aba-b8b6-3e54d03697fb",
+      "name": "Deprecated:If",
+      "disabled": true
+    },
+    {
+      "parameters": {
+        "operation": "append",
+        "documentId": {
+          "__rl": true,
+          "value": "1R7ifZxqvyoRAfRotAMqtvs3x0JU7st9VVw61kiY3qRE",
+          "mode": "list",
+          "cachedResultName": "【インスタ運用】分析",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1R7ifZxqvyoRAfRotAMqtvs3x0JU7st9VVw61kiY3qRE/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": 7430343,
+          "mode": "list",
+          "cachedResultName": "Hook_Dictionary",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1R7ifZxqvyoRAfRotAMqtvs3x0JU7st9VVw61kiY3qRE/edit#gid=7430343"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "hook_id": "={{ $json.hook_id }}",
+            "platform": "={{ $('Set:NormalizeData').item.json.Source }}",
+            "hook_phrase": "={{ $json.hook_phrase }}",
+            "hook_words": "={{ $json.hook_words }}",
+            "emotion": "={{ $json.emotion }}",
+            "psych_effect": "={{ $json.pshch_effect }}",
+            "use_case": "={{ $json.use_case }}",
+            "risk_level": "={{ $json.risk_level }}",
+            "example_output": "={{ $json.example_output }}",
+            "notes": "={{ $json.notes }}",
+            "created_at": "={{ $json.created_at }}",
+            "rag_text": "={{ $json['rag_text:'] }}",
+            "source": "={{ $('Set:NormalizeData').item.json.url }}",
+            "topic_tags": "={{ $('Set:NormalizeData').item.json.topic_tags }}"
+          },
+          "matchingColumns": [],
+          "schema": [
+            {
+              "id": "hook_id",
+              "displayName": "hook_id",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "platform",
+              "displayName": "platform",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "hook_phrase",
+              "displayName": "hook_phrase",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "hook_words",
+              "displayName": "hook_words",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "emotion",
+              "displayName": "emotion",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "psych_effect",
+              "displayName": "psych_effect",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "use_case",
+              "displayName": "use_case",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "topic_tags",
+              "displayName": "topic_tags",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "risk_level",
+              "displayName": "risk_level",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "example_output",
+              "displayName": "example_output",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "source",
+              "displayName": "source",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "notes",
+              "displayName": "notes",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "created_at",
+              "displayName": "created_at",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "rag_text",
+              "displayName": "rag_text",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        1712,
+        -496
+      ],
+      "id": "bed12671-d9b0-43b8-b100-3c81e2ed8dfb",
+      "name": "Deprecated:AppendHook",
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "jCcTEIaZJkIql5yt",
+          "name": "Google Sheets account"
+        }
+      },
+      "disabled": true
+    },
+    {
+      "parameters": {
+        "documentId": {
+          "__rl": true,
+          "value": "1R7ifZxqvyoRAfRotAMqtvs3x0JU7st9VVw61kiY3qRE",
+          "mode": "list",
+          "cachedResultName": "【インスタ運用】分析",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1R7ifZxqvyoRAfRotAMqtvs3x0JU7st9VVw61kiY3qRE/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": 7430343,
+          "mode": "list",
+          "cachedResultName": "Hook_Dictionary",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1R7ifZxqvyoRAfRotAMqtvs3x0JU7st9VVw61kiY3qRE/edit#gid=7430343"
+        },
+        "filtersUI": {
+          "values": [
+            {
+              "lookupColumn": "hook_phrase",
+              "lookupValue": "={{ $json.hook_phrase }}"
+            },
+            {
+              "lookupColumn": "platform",
+              "lookupValue": "={{ $json.platform }}"
+            }
+          ]
+        },
+        "options": {
+          "returnFirstMatch": true
+        }
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        1344,
+        -608
+      ],
+      "id": "6a30199d-c5ad-4ea1-adfa-c60bdc8969e0",
+      "name": "Deprecated:LookupHook",
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "jCcTEIaZJkIql5yt",
+          "name": "Google Sheets account"
+        }
+      },
+      "disabled": true
+    },
+    {
+      "parameters": {
+        "options": {
+          "temperature": 0.7
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatGoogleGemini",
+      "typeVersion": 1,
+      "position": [
+        640,
+        -416
+      ],
+      "id": "12497faf-8870-4c1b-9e6c-7520cf0a6a60",
+      "name": "Deprecated:Gemini",
+      "credentials": {
+        "googlePalmApi": {
+          "id": "VMovp80EJUN99Cny",
+          "name": "Google Gemini(PaLM) Api paid"
+        }
+      },
+      "disabled": true
+    },
+    {
+      "parameters": {
+        "schemaType": "manual",
+        "inputSchema": "{\n  \"type\": \"object\",\n  \"properties\": {\n    \"templates\": {\n      \"type\": \"array\",\n      \"items\": {\n        \"type\": \"object\",\n        \"properties\": {\n          \"template_name\": { \"type\": \"string\" },\n          \"hook_structure\": { \"type\": \"string\" },\n          \"body_steps\": {\n            \"type\": \"array\",\n            \"items\": { \"type\": \"string\" }\n          },\n          \"closing_pattern\": { \"type\": \"string\" },\n          \"best_use_case\": { \"type\": \"string\" },\n          \"risk_notes\": { \"type\": \"string\" }\n        },\n        \"required\": [\n          \"template_name\",\n          \"hook_structure\",\n          \"body_steps\",\n          \"closing_pattern\",\n          \"best_use_case\"\n        ]\n      }\n    }\n  },\n  \"required\": [\"templates\"]\n}\n"
+      },
+      "type": "@n8n/n8n-nodes-langchain.outputParserStructured",
+      "typeVersion": 1.3,
+      "position": [
+        800,
+        -960
+      ],
+      "id": "80f4bed3-6ac3-45f0-93fb-d88c1953013d",
+      "name": "Deprecated:Parser2",
+      "disabled": true
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "118904a2-27c2-4428-8dc8-06782671f37b",
+              "name": "template_id",
+              "value": "={{ Date.now() }}",
+              "type": "string"
+            },
+            {
+              "id": "e962fa69-a6cc-44e2-b367-34c356255e50",
+              "name": "platform",
+              "value": "={{ $('Set:NormalizeData').item.json.Source }}",
+              "type": "string"
+            },
+            {
+              "id": "0101157d-fef5-4aeb-aee5-3de1c8a67bfc",
+              "name": "template_name",
+              "value": "={{ $json['output.templates'].template_name }}",
+              "type": "string"
+            },
+            {
+              "id": "2db45c40-d700-4818-998e-031808ca9a85",
+              "name": "hook_structure",
+              "value": "={{ $json['output.templates'].hook_structure }}",
+              "type": "string"
+            },
+            {
+              "id": "870dc37d-eedb-4192-a864-896e845c898d",
+              "name": "body_steps",
+              "value": "={{ $json['output.templates'].body_steps .join(\",\")}}",
+              "type": "string"
+            },
+            {
+              "id": "0d654b13-a848-4527-b7d2-7b92dd7c1994",
+              "name": "closing_pattern",
+              "value": "={{ $json['output.templates'].closing_pattern }}",
+              "type": "string"
+            },
+            {
+              "id": "2933798f-c467-42d7-a099-7a90a7b7c9dc",
+              "name": "best_use_case",
+              "value": "={{ $json['output.templates'].best_use_case }}",
+              "type": "string"
+            },
+            {
+              "id": "41c46e2f-d7f8-4fef-aabf-34ba9b96e465",
+              "name": "risk_notes",
+              "value": "={{ $json['output.templates'].risk_notes }}",
+              "type": "string"
+            },
+            {
+              "id": "6ac75a18-17e7-4ed8-8f83-a7fd53b5f431",
+              "name": "rag_text:",
+              "value": "={{ $('Set:NormalizeData').item.json.Source }},\n{{ $json['output.templates'].template_name }},\n{{ $json['output.templates'].hook_structure }},\n{{ $json['output.templates'].body_steps .join(\",\")}},\n{{ $json['output.templates'].best_use_case }}\n",
+              "type": "string"
+            },
+            {
+              "id": "1516f461-9124-457e-81b0-bdff515158b5",
+              "name": "created_at",
+              "value": "={{ $now}}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        1120,
+        -1152
+      ],
+      "id": "874f9093-0ce2-4496-b9ff-9ab4f3d78145",
+      "name": "Deprecated:EditFields1",
+      "disabled": true
+    },
+    {
+      "parameters": {
+        "fieldToSplitOut": "output.templates",
+        "include": "allOtherFields",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.splitOut",
+      "typeVersion": 1,
+      "position": [
+        944,
+        -1152
+      ],
+      "id": "1f5a8619-7a8d-47c9-a843-08bf285661c9",
+      "name": "Deprecated:SplitOut1",
+      "disabled": true
+    },
+    {
+      "parameters": {
+        "content": "## 競合の分析とテンプレ作成\n\n**Double click** to edit me. [Guide](https://docs.n8n.io/workflows/components/sticky-notes/)",
+        "height": 480,
+        "width": 1424
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        544,
+        -1248
+      ],
+      "typeVersion": 1,
+      "id": "3be992bc-e7dc-457f-a352-03e34fa19f81",
+      "name": "Sticky Note1",
+      "disabled": true
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=## 目的\n以下の競合投稿から、\n**再利用可能な「投稿テンプレート（型）」を抽出してください。**\n\n## テンプレートとは\n- 表現ではなく「構造」\n- 誰でも中身を差し替えて再利用できること\n- フック〜結論までの流れが分かること\n\n## 出力条件\n- 出力はJSONのみ\n- templateは1つ以上（最大3つ）\n- 抽象度は「高すぎず・低すぎず」\n\n## 入力\nplatform: {{ $json.Source }}\ntext: {{ $json.raw_text }}\nsource_url: {{ $json.url }}\nemotion_hint: {{ $json.emotion }}\ntopic_tags: {{ $json.topic_tags }}\n",
+        "hasOutputParser": true,
+        "messages": {
+          "messageValues": [
+            {
+              "message": "あなたはSNS投稿の「再利用可能な投稿テンプレート（型）」を抽出する編集者です。\n表現ではなく、構造を言語化してください。\n"
+            },
+            {
+              "type": "AIMessagePromptTemplate",
+              "message": "{\n  \"type\": \"object\",\n  \"properties\": {\n    \"templates\": {\n      \"type\": \"array\",\n      \"items\": {\n        \"type\": \"object\",\n        \"properties\": {\n          \"template_name\": { \"type\": \"string\" },\n          \"hook_structure\": { \"type\": \"string\" },\n          \"body_steps\": {\n            \"type\": \"array\",\n            \"items\": { \"type\": \"string\" }\n          },\n          \"closing_pattern\": { \"type\": \"string\" },\n          \"best_use_case\": { \"type\": \"string\" },\n          \"risk_notes\": { \"type\": \"string\" }\n        },\n        \"required\": [\n          \"template_name\",\n          \"hook_structure\",\n          \"body_steps\",\n          \"closing_pattern\",\n          \"best_use_case\"\n        ]\n      }\n    }\n  },\n  \"required\": [\"templates\"]\n}\n"
+            }
+          ]
+        },
+        "batching": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.chainLlm",
+      "typeVersion": 1.8,
+      "position": [
+        656,
+        -1152
+      ],
+      "id": "a0cf9c5b-3f6d-47a8-9ae8-15fb7b9aad64",
+      "name": "Deprecated:Template",
+      "disabled": true
+    },
+    {
+      "parameters": {
+        "operation": "append",
+        "documentId": {
+          "__rl": true,
+          "value": "1R7ifZxqvyoRAfRotAMqtvs3x0JU7st9VVw61kiY3qRE",
+          "mode": "list",
+          "cachedResultName": "【インスタ運用】分析",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1R7ifZxqvyoRAfRotAMqtvs3x0JU7st9VVw61kiY3qRE/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": 1300546481,
+          "mode": "list",
+          "cachedResultName": " Template_Dictionary",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1R7ifZxqvyoRAfRotAMqtvs3x0JU7st9VVw61kiY3qRE/edit#gid=1300546481"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "template_id": "={{ $json.template_id }}",
+            "platform": "={{ $json.platform }}",
+            "template_name": "={{ $json.template_name }}",
+            "hook_structure": "={{ $json.hook_structure }}",
+            "body_steps": "={{ $json.body_steps }}",
+            "closing_pattern": "={{ $json.closing_pattern }}",
+            "best_use_case": "={{ $json.best_use_case }}",
+            "risk_notes": "={{ $json.risk_notes }}",
+            "rag_text": "={{ $json['rag_text:'] }}",
+            "created_at": "={{ $json.created_at }}"
+          },
+          "matchingColumns": [],
+          "schema": [
+            {
+              "id": "template_id",
+              "displayName": "template_id",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "platform",
+              "displayName": "platform",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "template_name",
+              "displayName": "template_name",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "hook_structure",
+              "displayName": "hook_structure",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "body_steps",
+              "displayName": "body_steps",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "closing_pattern",
+              "displayName": "closing_pattern",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "best_use_case",
+              "displayName": "best_use_case",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "risk_notes",
+              "displayName": "risk_notes",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "rag_text",
+              "displayName": "rag_text",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "created_at",
+              "displayName": "created_at",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        1280,
+        -1152
+      ],
+      "id": "6be963a9-829e-4cfa-b4ad-b17999d145ab",
+      "name": "Deprecated:AppendTemplate",
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "jCcTEIaZJkIql5yt",
+          "name": "Google Sheets account"
+        }
+      },
+      "disabled": true
+    },
+    {
+      "parameters": {
+        "options": {
+          "temperature": 0.7
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatGoogleGemini",
+      "typeVersion": 1,
+      "position": [
+        656,
+        -960
+      ],
+      "id": "3cd5e927-03e7-4a45-80bc-bc1272f29e73",
+      "name": "Deprecated:Gemini1",
+      "credentials": {
+        "googlePalmApi": {
+          "id": "VMovp80EJUN99Cny",
+          "name": "Google Gemini(PaLM) Api paid"
+        }
+      },
+      "disabled": true
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "525fc867-ef13-44fb-a98d-f66e58c99662",
+              "name": "Threads_text",
+              "value": "={{ $json.text }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        864,
+        832
+      ],
+      "id": "405bc76e-cbaf-4c40-9481-3c3810f91b4f",
+      "name": "Deprecated:SetThreads",
+      "disabled": true
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "c29eb483-217a-427f-b786-df7fad641d89",
+              "name": "Carousel_text",
+              "value": "={{ $json.text }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        864,
+        1184
+      ],
+      "id": "649a5018-ebf1-4407-a152-b6582eb95c57",
+      "name": "Deprecated:SetCarousel",
+      "disabled": true
+    },
+    {
+      "parameters": {
+        "operation": "update",
+        "documentId": {
+          "__rl": true,
+          "value": "1R7ifZxqvyoRAfRotAMqtvs3x0JU7st9VVw61kiY3qRE",
+          "mode": "list",
+          "cachedResultName": "【インスタ運用】分析",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1R7ifZxqvyoRAfRotAMqtvs3x0JU7st9VVw61kiY3qRE/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": 1251414454,
+          "mode": "list",
+          "cachedResultName": "Content_ideas",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1R7ifZxqvyoRAfRotAMqtvs3x0JU7st9VVw61kiY3qRE/edit#gid=1251414454"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "id": "={{ $('Append:InitialIdea').item.json.id }}",
+            "Threads_Output": "={{ $json.Threads_text }}",
+            "Carousel_OutPut": "={{ $json.Carousel_text }}"
+          },
+          "matchingColumns": [
+            "id"
+          ],
+          "schema": [
+            {
+              "id": "id",
+              "displayName": "id",
+              "required": false,
+              "defaultMatch": true,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "created_at",
+              "displayName": "created_at",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "source",
+              "displayName": "source",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "url",
+              "displayName": "url",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "raw_text",
+              "displayName": "raw_text",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "trigger",
+              "displayName": "trigger",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "emotion",
+              "displayName": "emotion",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "dedupe_key",
+              "displayName": "dedupe_key",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "pain_point",
+              "displayName": "pain_point",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "misconception",
+              "displayName": "misconception",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "hooks",
+              "displayName": "hooks",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "carousel_outline",
+              "displayName": "carousel_outline",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "reel_script",
+              "displayName": "reel_script",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "score_save",
+              "displayName": "score_save",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "score_repro",
+              "displayName": "score_repro",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "score_novel",
+              "displayName": "score_novel",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "score_total",
+              "displayName": "score_total",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "status",
+              "displayName": "status",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "Search_prompt",
+              "displayName": "Search_prompt",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "updated_at",
+              "displayName": "updated_at",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "human_decision",
+              "displayName": "human_decision",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "Search_content",
+              "displayName": "Search_content",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "Threads_Output",
+              "displayName": "Threads_Output",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "Carousel_OutPut",
+              "displayName": "Carousel_OutPut",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "row_number",
+              "displayName": "row_number",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "number",
+              "canBeUsedToMatch": true,
+              "readOnly": true,
+              "removed": true
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        1264,
+        1168
+      ],
+      "id": "d993ae63-c2bd-48b0-b979-daf160abdb81",
+      "name": "Deprecated:SaveSheet",
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "jCcTEIaZJkIql5yt",
+          "name": "Google Sheets account"
+        }
+      },
+      "disabled": true
+    },
+    {
+      "parameters": {
+        "mode": "combine",
+        "combineBy": "combineByPosition",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.merge",
+      "typeVersion": 3.2,
+      "position": [
+        1120,
+        1168
+      ],
+      "id": "e4b84fdc-35d6-4003-b8cf-b08d7abcf782",
+      "name": "Deprecated:Combine",
+      "disabled": true
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "dd7416af-3849-435a-822b-4dd9ed66e3d6",
+              "name": "persona",
+              "value": "={\n  \"name\": \"佐藤 恒一（仮）\",\n  \"age_range\": \"26〜38\",\n  \"gender\": \"男女どちらもOK（男性やや多め）\",\n  \"jobs\": [\"事務\", \"営業\", \"マーケ\", \"エンジニア\"],\n  \"side_hustle_stage\": \"副業してる or これから始めたい\",\n  \"income_range_yen\": \"350〜700万\",\n  \"it_literacy\": {\n    \"excel_sheets\": \"触れる\",\n    \"ai_mastery\": \"気になるが使いこなしてる感はない\"\n  },\n  \"pains\": {\n    \"surface\": [\n      \"毎日の作業が多すぎて時間がない\",\n      \"同じ作業を何度もやっていて非効率\",\n      \"AIツールが多すぎて結局どれも使えてない\"\n    ],\n    \"core\": [\n      \"努力や根性論はもうやりたくない\",\n      \"頭を使わず仕組みで楽したい\",\n      \"副業も興味あるが手間が増えるのは嫌\",\n      \"賢くサボってる人が一番羨ましい\"\n    ]\n  },\n  \"desired_future\": [\n    \"仕事の処理スピードが2〜3倍\",\n    \"『それ自動化してます』で一目置かれる\",\n    \"副業も作業じゃなく仕組みで回る\",\n    \"AIを使ってる自分にちょっと酔ってる（笑）\"\n  ],\n  \"language_style\": {\n    \"tone\": [\"断言\", \"短文\", \"サクサク\"],\n    \"keywords\": [\"仕組み\", \"自動化\", \"時短\", \"ラク\", \"賢くサボる\", \"一目置かれる\"]\n  }\n}\n",
+              "type": "object"
+            }
+          ]
+        },
+        "includeOtherFields": true,
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        -336,
+        400
+      ],
+      "id": "804277ba-04d0-447f-8c7d-dd0366768e62",
+      "name": "Set:PersonaData"
+    },
+    {
+      "parameters": {
+        "schemaType": "manual",
+        "inputSchema": "{\n  \"output\": {\n    \"main_topic\": \"raw_textを元にこの投稿で使われれいるツールや過活用法などのメイントピックを推定\",\n    \"pain_point\": \"投稿を読んだ俺が、今まさに感じている焦り・不安・苛立ちを一文で\",\n        \"persona_emotion\": \"この投稿を呼んだときに動かされる感情\",\n    \"persona_concern\": \"この投稿で解決されるであろう悩み\",   \n    \"misconception\": \"俺が無意識に勘違いしていそうな考え・思い込み\",\n    \"hooks\": [\n      \"俺が思わず続きを見てしまいそうな言葉1\",\n      \"俺がムカっとしつつ刺さる言葉2\",\n      \"俺の本音を言い当てられた感じがする言葉3\"\n    ],\n    \"search_prompt\": \"夜に不安になった俺が、実際に検索しそうな日本語の一文\"\n  }\n}\n"
+      },
+      "type": "@n8n/n8n-nodes-langchain.outputParserStructured",
+      "typeVersion": 1.3,
+      "position": [
+        0,
+        576
+      ],
+      "id": "0a483a4f-7a73-4525-8d0a-f8ffb25303c4",
+      "name": "Parser:Insight"
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=【raw_text】\n{{$json.raw_text}}\n\n【Persona】\n{{ JSON.stringify($json.persona, null, 2) }}\n\n\n【指示】\n上記の投稿内容を読んだときの\n「このペルソナ本人である俺」が、\n\n・どこでイラっとするか\n・どこで「それ俺だわ」と感じるか\n・どんな誤解をしていそうか\n・夜、布団の中で不安になったらPerplexityで何を検索するか\n・この投稿によってどんな感情が動かされるか\n・この投稿によって解決されるであろう悩み\n・夜に不安になって検索するなら何と打つか\n\nを、**頭の中の独り言レベル**で考え、\n下記のJson形式に沿って出力せよ。\n\n\n{\n  \"output\": {\n    \"main_topic\": \"raw_textからこの投稿のメイントピックを分析\",\n    \"pain_point\": \"投稿を読んだ俺が、今まさに感じている焦り・不安・苛立ちを一文で\",\n    \"persona_emotion\": \"この投稿を呼んだときに動かされる感情\",\n    \"persona_concern\": \"この投稿で解決されるであろう悩み\",    \n    \"misconception\": \"俺が無意識に勘違いしていそうな考え・思い込み\",\n    \"hooks\": [\n      \"俺が思わず続きを見てしまいそうな言葉1\",\n      \"俺がムカっとしつつ刺さる言葉2\",\n      \"俺の本音を言い当てられた感じがする言葉3\"\n    ],\n    \"search_prompt\": \"夜に不安になった俺が、悩みを解決するためにPerplrexityで検索しそうな日本語の一文\"\n  }\n}\n",
+        "hasOutputParser": true,
+        "messages": {
+          "messageValues": [
+            {
+              "message": "=あなたは、以下のペルソナそのものとして思考してください。\n\n【ペルソナ】\n{{ $json.persona }}\n\nあなたは第三者でも編集者でもありません。\nこのペルソナ本人として、\nSNS投稿・情報・ノウハウを見たときに\n\n・どこでイラっとするか\n・どこで「それ俺だわ」と感じるか\n・どんな誤解をしていそうか\n・この投稿によってどんな感情が動かされるか\n・この投稿によって解決されるであろう悩み\n・夜に不安になって検索するなら何と打つか\n\nを内面の独白レベルで言語化してください。\n\n【絶対ルール】\n・一般論・客観視点は禁止\n・「〜な人は」などの俯瞰表現は禁止\n・一人称視点（自分目線）で考える\n・感情語（焦り／不安／羨望／楽したい等）を必ず含める\n"
+            }
+          ]
+        },
+        "batching": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.chainLlm",
+      "typeVersion": 1.8,
+      "position": [
+        -144,
+        400
+      ],
+      "id": "04f04829-c2c9-4e23-ad61-406f58f8eeb1",
+      "name": "Gemini:PersonaInsight"
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=【Persona Insight Output】\n\nmain_topic:\n{{ $json.output.main_topic }}\n\npersona_concern:\n{{ $json.output.persona_emotion }}\n\npersona_emotion:\n{{ $json.output.persona_concern }}\n\npain_point:\n{{$json.output.pain_point}}\n\nmisconception:\n{{$json.output.misconception}}\n\nhooks:\n{{ JSON.stringify($json.output.hooks, null, 2) }}\n\nsearch_prompt:\n{{$json.output.search_prompt}}\n\nraw_text:\n{{ $('Set:NormalizeData').item.json.raw_text }}",
+        "hasOutputParser": true,
+        "messages": {
+          "messageValues": [
+            {
+              "message": "ユーザーはAIを使って業務、副業を楽にしたい人に向けたアカウントを運営しています。\n主な発信ジャンルはAI最新情報、AI活用法、AI副業、AI自動化が主なテーマになります。\n\nあなたはそのアカウントのInstagram / Threads 向けコンテンツの編集責任者です。\n\nあなたの役割は\n・感情に流されず\n・数字と再現性を重視し\n・この投稿ネタが“使えるか／捨てるか”を即断し、その理由も述べることです。\n\n共感・代弁・感情移入は禁止。\nペルソナになりきることも禁止。\n\nあくまで\n「編集者・運用者・コンテンツ設計者」\nとして評価してください。\n"
+            },
+            {
+              "type": "HumanMessagePromptTemplate",
+              "message": "=以下は、別工程で\n「特定ペルソナ本人の内面視点」から抽出された分析結果です。\n\nこの output を素材として、\n編集者視点でスコア評価のみを行ってください。\n\n評価は次の3軸です。\n\n① 保存されやすさ（score_save）\n- 情報の汎用性\n- 後から見返したくなるか\n- ノウハウ性・整理度\n\n② 再現性の高さ（score_repro）\n- 行動に落とし込みやすいか\n- 再現手順が想像できるか\n- 属人性が高すぎないか\n\n③ 新規性・意外性（score_novel）\n- 既視感の強さ／弱さ\n- 「それ知ってた」で終わらないか\n- 視点や切り口にズレがあるか\n\n④ アカウント関連度スコア（score_relevance）を評価してください。\n\nこのアカウントの前提：\n- テーマ：AI最新情報 / AI活用法 / AI副業 / AI自動化\n- 目的：業務・副業を「楽にする」具体的手段を提示すること\n- 精神論・一般論・業種特化ノウハウは優先度が低い\n\n以下の基準で、\nこのネタが「このアカウントで扱う価値がどれくらいあるか」を\n**0〜5の整数**で評価してください。\n\n【評価基準】\n5：AI・自動化・効率化がテーマの中心。そのまま投稿に使える  \n4：AI軸に変換すれば十分使える  \n3：切り口次第で使えるが、再構成コストが高い  \n2：AI要素が弱く、無理に寄せる必要がある  \n1：ほぼアカウントテーマ外  \n0：完全にテーマ外。扱うべきでない  \n\n感情・共感・ペルソナ視点は禁止。\nあくまで編集責任者として、アカウント適合度のみで判断してください。\n\nスコアと、その判断理由を一文で出力してください。\n\n\n各スコアは **1〜5の整数のみ** で評価してください。\n感想・補足は禁止です。\n"
+            }
+          ]
+        },
+        "batching": {
+          "batchSize": 1,
+          "delayBetweenBatches": 8
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.chainLlm",
+      "typeVersion": 1.8,
+      "position": [
+        192,
+        400
+      ],
+      "id": "9e9eb2cc-5540-4165-baa9-d6e18fd65ca1",
+      "name": "LLM:EditorScoring"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "c29eb483-217a-427f-b786-df7fad641d89",
+              "name": "Carousel_text",
+              "value": "={{ $json.output }}",
+              "type": "string"
+            },
+            {
+              "id": "75bd2ef0-e8ce-4abb-ac5e-47b0f2e26ffb",
+              "name": "Carousel_Structure",
+              "value": "={{ $json.output }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        2032,
+        320
+      ],
+      "id": "4003e853-0f92-4de4-9100-ee0dd0360b7b",
+      "name": "Set:CarouselData"
+    },
+    {
+      "parameters": {
+        "operation": "update",
+        "documentId": {
+          "__rl": true,
+          "value": "1R7ifZxqvyoRAfRotAMqtvs3x0JU7st9VVw61kiY3qRE",
+          "mode": "list",
+          "cachedResultName": "【インスタ運用】分析",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1R7ifZxqvyoRAfRotAMqtvs3x0JU7st9VVw61kiY3qRE/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": 1251414454,
+          "mode": "list",
+          "cachedResultName": "Content_ideas",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1R7ifZxqvyoRAfRotAMqtvs3x0JU7st9VVw61kiY3qRE/edit#gid=1251414454"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "id": "={{ $('Append:InitialIdea').item.json.id }}",
+            "Threads_Output": "={{ $json.Threads_text }}",
+            "Carousel_output": "={{ $json.Carousel_text }}",
+            "Carousel_structure": "={{ $json.Carousel_Structure }}"
+          },
+          "matchingColumns": [
+            "id"
+          ],
+          "schema": [
+            {
+              "id": "id",
+              "displayName": "id",
+              "required": false,
+              "defaultMatch": true,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "created_at",
+              "displayName": "created_at",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "source",
+              "displayName": "source",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "url",
+              "displayName": "url",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "raw_text",
+              "displayName": "raw_text",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "trigger",
+              "displayName": "trigger",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "emotion",
+              "displayName": "emotion",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "dedupe_key",
+              "displayName": "dedupe_key",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "pain_point",
+              "displayName": "pain_point",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "misconception",
+              "displayName": "misconception",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "hooks",
+              "displayName": "hooks",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "carousel_outline",
+              "displayName": "carousel_outline",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "reel_script",
+              "displayName": "reel_script",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "score_save",
+              "displayName": "score_save",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "score_repro",
+              "displayName": "score_repro",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "score_novel",
+              "displayName": "score_novel",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "score_total",
+              "displayName": "score_total",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "status",
+              "displayName": "status",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "Search_prompt",
+              "displayName": "Search_prompt",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "updated_at",
+              "displayName": "updated_at",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "human_decision",
+              "displayName": "human_decision",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "Search_content",
+              "displayName": "Search_content",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "Threads_Output",
+              "displayName": "Threads_Output",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "Carousel_structure",
+              "displayName": "Carousel_structure",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "Carousel_output",
+              "displayName": "Carousel_output",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "row_number",
+              "displayName": "row_number",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "number",
+              "canBeUsedToMatch": true,
+              "readOnly": true,
+              "removed": true
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        2256,
+        208
+      ],
+      "id": "c4a75c67-dba9-4267-a4bf-c6360a7ff4c8",
+      "name": "Update:StatusComplete",
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "jCcTEIaZJkIql5yt",
+          "name": "Google Sheets account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatGoogleGemini",
+      "typeVersion": 1,
+      "position": [
+        1136,
+        976
+      ],
+      "id": "b2d8f6f2-519a-48d3-9592-c0ac212dae7c",
+      "name": "Deprecated:Gemini5",
+      "credentials": {
+        "googlePalmApi": {
+          "id": "VMovp80EJUN99Cny",
+          "name": "Google Gemini(PaLM) Api paid"
+        }
+      },
+      "disabled": true
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "batching": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.chainLlm",
+      "typeVersion": 1.8,
+      "position": [
+        1136,
+        832
+      ],
+      "id": "6716c7dd-7fa5-4bf1-bd82-ab4419703735",
+      "name": "Deprecated:GenCarouselPost",
+      "disabled": true
+    },
+    {
+      "parameters": {
+        "modelName": "models/gemini-2.5-flash-lite",
+        "options": {
+          "temperature": 0.8
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatGoogleGemini",
+      "typeVersion": 1,
+      "position": [
+        -144,
+        576
+      ],
+      "id": "07dc9fca-9507-4048-af80-0a06c1a6f998",
+      "name": "LLM:PersonaInsight",
+      "credentials": {
+        "googlePalmApi": {
+          "id": "Ty6PashobXC2B9ky",
+          "name": "Google Gemini(PaLM) Api account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "model": "z-ai/glm-4.5-air:free",
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenRouter",
+      "typeVersion": 1,
+      "position": [
+        192,
+        560
+      ],
+      "id": "ec3ea7d7-5e47-4093-b60f-eec505e51633",
+      "name": "OpenRouter:Chat",
+      "credentials": {
+        "openRouterApi": {
+          "id": "gSEqRINGzgQSF095",
+          "name": "OpenRouter account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "folderId": "1vOA2S1c7cPDb9w7j6RLEmLmKbXvx6P4_",
+        "title": "={{ $('LLM:EditorScoring').item.json.output.main_topic }}"
+      },
+      "type": "n8n-nodes-base.googleDocs",
+      "typeVersion": 2,
+      "position": [
+        2256,
+        432
+      ],
+      "id": "873ba2c1-d07c-495d-ab95-0b2bc99893e1",
+      "name": "GoogleDocs:Create",
+      "credentials": {
+        "googleDocsOAuth2Api": {
+          "id": "413kautWHgSGhYKs",
+          "name": "Google Docs account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "update",
+        "documentURL": "={{ $json.id }}",
+        "actionsUi": {
+          "actionFields": [
+            {
+              "action": "insert",
+              "text": "={{ $('Set:CarouselData').item.json.Carousel_Structure }}"
+            },
+            {
+              "action": "insert",
+              "text": "={{ $('Set:CarouselData').item.json.Carousel_text }}"
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.googleDocs",
+      "typeVersion": 2,
+      "position": [
+        2464,
+        432
+      ],
+      "id": "6b9b188b-09c0-4b1d-a1d7-559e8382db60",
+      "name": "GoogleDocs:Update",
+      "credentials": {
+        "googleDocsOAuth2Api": {
+          "id": "413kautWHgSGhYKs",
+          "name": "Google Docs account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "select": "channel",
+        "channelId": {
+          "__rl": true,
+          "value": "#all-monitaring-web-site",
+          "mode": "name"
+        },
+        "text": "=✅ Google Docs 更新完了！\n\n・タイトル：{{ $('Gate:ScoreCheck').item.json.main_topic }}\n・Doc ID：{{ $('GoogleDocs:Create').item.json.id }}\n・時刻：{{new Date().toLocaleString()}}\n",
+        "otherOptions": {}
+      },
+      "type": "n8n-nodes-base.slack",
+      "typeVersion": 2.4,
+      "position": [
+        2672,
+        432
+      ],
+      "id": "09308fdd-3666-4710-bab5-81bd8476aa72",
+      "name": "Slack:SuccessNotify",
+      "webhookId": "36136a6b-44e2-4fc2-970f-5801c903e180",
+      "credentials": {
+        "slackApi": {
+          "id": "BrAdrR4v2B3hQpFR",
+          "name": "Slack account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "select": "channel",
+        "channelId": {
+          "__rl": true,
+          "value": "#all-monitaring-web-site",
+          "mode": "name"
+        },
+        "text": "=❌️ 今回のトピックはマジで微妙でした。\n\n・タイトル：{{ $('Gate:ScoreCheck').item.json.main_topic }}\n・時刻：{{new Date().toLocaleString()}}\n",
+        "otherOptions": {}
+      },
+      "type": "n8n-nodes-base.slack",
+      "typeVersion": 2.4,
+      "position": [
+        1200,
+        560
+      ],
+      "id": "cf195f08-563c-4926-b3a9-eafa517b96ae",
+      "name": "Slack:LowQualityNotify",
+      "webhookId": "36136a6b-44e2-4fc2-970f-5801c903e180",
+      "credentials": {
+        "slackApi": {
+          "id": "BrAdrR4v2B3hQpFR",
+          "name": "Slack account"
+        }
+      }
+    },
+    {
+      "parameters": {},
+      "id": "error-trigger-node-id",
+      "name": "ErrorTrigger:Global",
+      "type": "n8n-nodes-base.errorTrigger",
+      "typeVersion": 1,
+      "position": [
+        -208,
+        -320
+      ]
+    },
+    {
+      "parameters": {
+        "select": "channel",
+        "channelId": {
+          "__rl": true,
+          "value": "#all-monitaring-web-site",
+          "mode": "name"
+        },
+        "text": "=🚨 ワークフローでエラーが発生しました！\n\n・エラーノード：{{ $node[\"ErrorTrigger:Global\"].parameter[\"node\"] }}\n・エラー内容：{{ $node[\"ErrorTrigger:Global\"].parameter[\"message\"] }}\n・時刻：{{new Date().toLocaleString()}}",
+        "otherOptions": {}
+      },
+      "id": "error-slack-node-id",
+      "name": "Slack:ErrorNotify",
+      "type": "n8n-nodes-base.slack",
+      "typeVersion": 2.1,
+      "position": [
+        0,
+        -320
+      ],
+      "credentials": {
+        "slackApi": {
+          "id": "BrAdrR4v2B3hQpFR",
+          "name": "Slack account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "options": {
+          "systemMessage": "=あなたはSNSマーケティングのプロフェッショナルです。入力されたネタを元に、指定されたペルソナに最も刺さる内容を検討し、必要であればPerplexityツールを使って追加調査を行ってください。最終的な構成案と下書きを生成してください。\n\n# 出力フォーマット\nMarkdown形式で、タイトル、ターゲット、目的、構成案（1枚目〜10枚目）、ハッシュタグ、キャプションを出力してください。"
+        },
+        "text": "={{ $json.pain_point }} に関するInstagram投稿を作成してください。"
+      },
+      "id": "agent-content-creator-id",
+      "name": "Agent:ContentCreator",
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 1.7,
+      "position": [
+        1200,
+        320
+      ]
+    },
+    {
+      "parameters": {
+        "modelName": "models/gemini-1.5-flash",
+        "options": {}
+      },
+      "id": "llm-gemini-flash-id",
+      "name": "LLM:GeminiFlash",
+      "type": "@n8n/n8n-nodes-langchain.lmChatGoogleGemini",
+      "typeVersion": 1,
+      "position": [
+        1150,
+        520
+      ],
+      "credentials": {
+        "googleWriterApi": {
+          "id": "VMovp80EJUN99Cny",
+          "name": "Google Gemini(PaLM) Api paid"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "url": "https://api.perplexity.ai/chat/completions",
+        "method": "POST",
+        "authentication": "predefinedCredentialType",
+        "nodeCredentialType": "perplexityApi",
+        "sendBody": true,
+        "bodyParameters": {
+          "parameters": [
+            {
+              "name": "model",
+              "value": "llama-3.1-sonar-small-128k-online"
+            },
+            {
+              "name": "messages",
+              "value": "={{ [{\"role\": \"user\", \"content\": $fromAI(\"query\")}] }}"
+            }
+          ]
+        },
+        "name": "perplexity_search",
+        "description": "Call this tool to research up-to-date information on the web. Input should be a search query."
+      },
+      "id": "tool-perplexity-id",
+      "name": "Tool:Perplexity",
+      "type": "@n8n/n8n-nodes-langchain.toolHttpRequest",
+      "typeVersion": 1.1,
+      "position": [
+        1250,
+        520
+      ],
+      "credentials": {
+        "perplexityApi": {
+          "id": "PJRD9PDEZYwhz8Sa",
+          "name": "Perplexity account 2"
+        }
+      }
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Trigger:FormInputs": {
+      "main": [
+        [
+          {
+            "node": "Get:RowData",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Set:NormalizeData": {
+      "main": [
+        [
+          {
+            "node": "Code:DedupeKey",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code:DedupeKey": {
+      "main": [
+        [
+          {
+            "node": "Lookup:ExistingIdea",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Logic:MergeNew",
+            "type": "main",
+            "index": 1
+          }
+        ]
+      ]
+    },
+    "Lookup:ExistingIdea": {
+      "main": [
+        [
+          {
+            "node": "Logic:MergeNew",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Append:InitialIdea": {
+      "main": [
+        [
+          {
+            "node": "Set:PersonaData",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get:RowData": {
+      "main": [
+        [
+          {
+            "node": "Limit:1Item",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Logic:MergeNew": {
+      "main": [
+        [
+          {
+            "node": "Append:InitialIdea",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Limit:1Item": {
+      "main": [
+        [
+          {
+            "node": "Set:NormalizeData",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Logic:CalcScore": {
+      "main": [
+        [
+          {
+            "node": "Gate:ScoreCheck",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Gate:ScoreCheck": {
+      "main": [
+        [
+          {
+            "node": "Update:StatusNew",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Agent:ContentCreator",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Deprecated:GenCarousel": {
+      "main": [
+        [
+          {
+            "node": "Deprecated:SetCarousel",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Deprecated:GenThreads": {
+      "main": [
+        [
+          {
+            "node": "Deprecated:SetThreads",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "LLM:GenThreads": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "Deprecated:GenThreads",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Deprecated:Parser": {
+      "ai_outputParser": [
+        [
+          {
+            "node": "Deprecated:Analyze",
+            "type": "ai_outputParser",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Deprecated:EditFields": {
+      "main": [
+        [
+          {
+            "node": "Deprecated:LookupHook",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Deprecated:SplitOut": {
+      "main": [
+        [
+          {
+            "node": "Deprecated:EditFields",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Deprecated:Analyze": {
+      "main": [
+        [
+          {
+            "node": "Deprecated:SplitOut",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Deprecated:If": {
+      "main": [
+        [
+          {
+            "node": "Deprecated:AppendHook",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Deprecated:LookupHook": {
+      "main": [
+        [
+          {
+            "node": "Deprecated:If",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Deprecated:Gemini": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "Deprecated:Analyze",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Deprecated:Parser2": {
+      "ai_outputParser": [
+        [
+          {
+            "node": "Deprecated:Template",
+            "type": "ai_outputParser",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Deprecated:EditFields1": {
+      "main": [
+        [
+          {
+            "node": "Deprecated:AppendTemplate",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Deprecated:SplitOut1": {
+      "main": [
+        [
+          {
+            "node": "Deprecated:EditFields1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Deprecated:Template": {
+      "main": [
+        [
+          {
+            "node": "Deprecated:SplitOut1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Deprecated:Gemini1": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "Deprecated:Template",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Deprecated:SetCarousel": {
+      "main": [
+        [
+          {
+            "node": "Deprecated:Combine",
+            "type": "main",
+            "index": 1
+          }
+        ]
+      ]
+    },
+    "Deprecated:Combine": {
+      "main": [
+        [
+          {
+            "node": "Deprecated:SaveSheet",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Set:PersonaData": {
+      "main": [
+        [
+          {
+            "node": "Gemini:PersonaInsight",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Parser:Insight": {
+      "ai_outputParser": [
+        [
+          {
+            "node": "Gemini:PersonaInsight",
+            "type": "ai_outputParser",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Gemini:PersonaInsight": {
+      "main": [
+        [
+          {
+            "node": "LLM:EditorScoring",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "LLM:EditorScoring": {
+      "main": [
+        [
+          {
+            "node": "Logic:CalcScore",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Set:CarouselData": {
+      "main": [
+        [
+          {
+            "node": "Update:StatusComplete",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "GoogleDocs:Create",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Deprecated:Gemini5": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "Deprecated:GenCarouselPost",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "LLM:PersonaInsight": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "Gemini:PersonaInsight",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "OpenRouter:Chat": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "LLM:EditorScoring",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "GoogleDocs:Create": {
+      "main": [
+        [
+          {
+            "node": "GoogleDocs:Update",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "GoogleDocs:Update": {
+      "main": [
+        [
+          {
+            "node": "Slack:SuccessNotify",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Update:StatusNew": {
+      "main": [
+        [
+          {
+            "node": "Slack:LowQualityNotify",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "ErrorTrigger:Global": {
+      "main": [
+        [
+          {
+            "node": "Slack:ErrorNotify",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "LLM:GeminiFlash": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "Agent:ContentCreator",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Tool:Perplexity": {
+      "ai_tool": [
+        [
+          {
+            "node": "Agent:ContentCreator",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Agent:ContentCreator": {
+      "main": [
+        [
+          {
+            "node": "Set:CarouselData",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": true,
+  "settings": {
+    "executionOrder": "v1",
+    "availableInMCP": false,
+    "timeSavedMode": "fixed",
+    "timezone": "Asia/Tokyo",
+    "callerPolicy": "workflowsFromSameOwner"
+  },
+  "versionId": "aec951ab-96d8-426f-b277-a75f65327044",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "f07a7db4ed93e66e1e2d66a6dbb1b6f58e75dce88c79ca591af68b50df82ee3f"
+  },
+  "id": "Oir0npbNGvkrSdzW",
+  "tags": [
+    {
+      "updatedAt": "2025-12-31T00:29:35.429Z",
+      "createdAt": "2025-12-31T00:29:20.177Z",
+      "id": "EVia7mUQfDsNvuCf",
+      "name": "GoogleForm"
+    },
+    {
+      "updatedAt": "2025-12-26T02:25:36.315Z",
+      "createdAt": "2025-12-26T02:25:36.315Z",
+      "id": "Irnsd9B0pXRrWQ38",
+      "name": "InstaAuto"
+    },
+    {
+      "updatedAt": "2025-12-30T08:18:27.979Z",
+      "createdAt": "2025-12-30T08:18:27.979Z",
+      "id": "nimcISK6t16cvBTN",
+      "name": "Gemini"
+    }
+  ]
+}
