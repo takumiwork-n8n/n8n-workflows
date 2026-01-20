@@ -1,0 +1,367 @@
+{
+    "meta": {
+        "instanceId": "cb4866657c793f608933b91811a0bb6c8106202e887e35b0ae2467f53f31f9b3"
+    },
+    "nodes": [
+        {
+            "parameters": {
+                "httpMethod": "POST",
+                "path": "x-post-extractor",
+                "responseMode": "lastNode",
+                "options": {}
+            },
+            "type": "n8n-nodes-base.webhook",
+            "typeVersion": 2,
+            "position": [
+                0,
+                0
+            ],
+            "id": "893d9a16-9b5a-4e09-a148-89d912b4dab8",
+            "name": "Webhook"
+        },
+        {
+            "parameters": {
+                "assignments": {
+                    "assignments": [
+                        {
+                            "id": "raw-text-assignment",
+                            "name": "raw_text",
+                            "value": "={{ $json.body.raw_text }}",
+                            "type": "string"
+                        },
+                        {
+                            "id": "created-at-assignment",
+                            "name": "created_at",
+                            "value": "={{ $now }}",
+                            "type": "string"
+                        }
+                    ]
+                },
+                "options": {}
+            },
+            "type": "n8n-nodes-base.set",
+            "typeVersion": 3.4,
+            "position": [
+                200,
+                0
+            ],
+            "id": "ece7a5a3-ac12-4d40-b565-23f9a42af813",
+            "name": "Set: Normalize"
+        },
+        {
+            "parameters": {
+                "modelId": "gemini-2.0-flash",
+                "messages": {
+                    "values": [
+                        {
+                            "content": "Analyze the provided X post and classify it into one of the following categories: CLAIM_REASON, HOWTO, PROBLEM_SOLUTION, STORY, LIST. Response must be only the category name."
+                        },
+                        {
+                            "role": "user",
+                            "content": "={{ $json.raw_text }}"
+                        }
+                    ]
+                },
+                "options": {}
+            },
+            "type": "@n8n/n8n-nodes-langchain.chainLlm",
+            "typeVersion": 1.8,
+            "position": [
+                400,
+                0
+            ],
+            "id": "c206d752-4dc2-4c84-ac41-18da4418b291",
+            "name": "AI: Classify Type"
+        },
+        {
+            "parameters": {
+                "modelId": "gemini-2.0-flash",
+                "messages": {
+                    "values": [
+                        {
+                            "content": "Extract the logical structure... (省略用プレースホルダー)"
+                        },
+                        {
+                            "role": "user",
+                            "content": "Post: {{ $('Set: Normalize').item.json.raw_text }}\\nType: {{ $json.output }}"
+                        }
+                    ]
+                },
+                "options": {}
+            },
+            "type": "@n8n/n8n-nodes-langchain.chainLlm",
+            "typeVersion": 1.8,
+            "position": [
+                700,
+                -100
+            ],
+            "id": "1b5a2c6e-042a-423b-b08e-6d98a7dd44e2",
+            "name": "AI: Template Extract"
+        },
+        {
+            "parameters": {
+                "modelId": "gemini-2.0-flash",
+                "messages": {
+                    "values": [
+                        {
+                            "content": "Extract 1-3 highly reusable catchphrases... (省略用プレースホルダー)"
+                        },
+                        {
+                            "role": "user",
+                            "content": "={{ $('Set: Normalize').item.json.raw_text }}"
+                        }
+                    ]
+                },
+                "options": {}
+            },
+            "type": "@n8n/n8n-nodes-langchain.chainLlm",
+            "typeVersion": 1.8,
+            "position": [
+                700,
+                150
+            ],
+            "id": "fec862ce-482c-4ce3-a3f8-f875374ea81d",
+            "name": "AI: Catchphrase Extract"
+        },
+        {
+            "parameters": {
+                "mode": "combine",
+                "combinationMode": "merge",
+                "options": {}
+            },
+            "type": "n8n-nodes-base.merge",
+            "typeVersion": 3,
+            "position": [
+                1000,
+                0
+            ],
+            "id": "edb6b529-7fab-4fdb-b0c7-b5cb3f8481a0",
+            "name": "Merge Assets"
+        },
+        {
+            "parameters": {
+                "conditions": {
+                    "options": {
+                        "caseSensitive": true,
+                        "leftValue": "",
+                        "typeValidation": "strict",
+                        "version": 3
+                    },
+                    "conditions": [
+                        {
+                            "id": "entity-check-cond",
+                            "leftValue": "={{ JSON.stringify($json).match(/[A-Z][a-z]+|[0-9]+/) !== null }}",
+                            "rightValue": true,
+                            "operator": {
+                                "type": "boolean",
+                                "operation": "true",
+                                "singleValue": true
+                            }
+                        }
+                    ],
+                    "combinator": "and"
+                },
+                "options": {}
+            },
+            "type": "n8n-nodes-base.if",
+            "typeVersion": 2.3,
+            "position": [
+                1250,
+                0
+            ],
+            "id": "cff84471-f95f-491e-a859-20bd4436b1ec",
+            "name": "IF: Specifics Remain?"
+        },
+        {
+            "parameters": {
+                "modelId": "gemini-2.0-flash",
+                "messages": {
+                    "values": [
+                        {
+                            "content": "The following extracted assets still contain specific entities..."
+                        },
+                        {
+                            "role": "user",
+                            "content": "={{ JSON.stringify($json) }}"
+                        }
+                    ]
+                },
+                "options": {}
+            },
+            "type": "@n8n/n8n-nodes-langchain.chainLlm",
+            "typeVersion": 1.8,
+            "position": [
+                1250,
+                -200
+            ],
+            "id": "7209dd02-43ae-4b58-9c1b-0165154f8162",
+            "name": "AI: Re-abstract"
+        },
+        {
+            "parameters": {
+                "operation": "append",
+                "documentId": {
+                    "__rl": true,
+                    "mode": "id",
+                    "value": "INSERT_YOUR_SHEET_ID"
+                },
+                "sheetName": {
+                    "__rl": true,
+                    "mode": "name",
+                    "value": "Templates"
+                },
+                "columns": {
+                    "mappingMode": "defineBelow",
+                    "value": {
+                        "created_at": "={{ $('Set: Normalize').item.json.created_at }}",
+                        "type": "={{ $('AI: Classify Type').item.json.output }}",
+                        "template": "={{ JSON.stringify($json.template_structure) }}",
+                        "catchphrases": "={{ JSON.stringify($json.catchphrases) }}"
+                    },
+                    "matchingColumns": []
+                },
+                "options": {}
+            },
+            "type": "n8n-nodes-base.googleSheets",
+            "typeVersion": 4.7,
+            "position": [
+                1500,
+                -100
+            ],
+            "id": "33ff30b6-0375-43e8-b824-b6815e19fb94",
+            "name": "Google Sheets"
+        },
+        {
+            "parameters": {
+                "fileContent": "=## Extraction Date: {{ $('Set: Normalize').item.json.created_at }}\\n## Type: {{ $('AI: Classify Type').item.json.output }}\\n\\n### 🏗 Template Structure\\n{{ $json.template_structure.map(s => `- **${s.slot}**: ${s.instruction}`).join('\\\\n') }}\\n\\n### ⚡️ Catchphrases\\n{{ $json.catchphrases.map(c => `- **${c.text}** (${c.pattern} / ${c.usage})`).join('\\\\n') }}\\n\\n---\\\\n**Raw Post:**\\\\n{{ $('Set: Normalize').item.json.raw_text }}",
+                "fileName": "=/files/obsidian/n8n/資産抽出/{{ $('Set: Normalize').item.json.created_at.split('T')[0] }}/Asset_{{ $now.getTime() }}.md",
+                "append": true,
+                "options": {}
+            },
+            "type": "n8n-nodes-base.writeBinaryFile",
+            "typeVersion": 1,
+            "position": [
+                1500,
+                150
+            ],
+            "id": "92c0b800-5091-4e02-bc66-9c13324c112d",
+            "name": "Write to Obsidian"
+        }
+    ],
+    "connections": {
+        "Webhook": {
+            "main": [
+                [
+                    {
+                        "node": "Set: Normalize",
+                        "type": "main",
+                        "index": 0
+                    }
+                ]
+            ]
+        },
+        "Set: Normalize": {
+            "main": [
+                [
+                    {
+                        "node": "AI: Classify Type",
+                        "type": "main",
+                        "index": 0
+                    }
+                ]
+            ]
+        },
+        "AI: Classify Type": {
+            "main": [
+                [
+                    {
+                        "node": "AI: Template Extract",
+                        "type": "main",
+                        "index": 0
+                    },
+                    {
+                        "node": "AI: Catchphrase Extract",
+                        "type": "main",
+                        "index": 0
+                    }
+                ]
+            ]
+        },
+        "AI: Template Extract": {
+            "main": [
+                [
+                    {
+                        "node": "Merge Assets",
+                        "type": "main",
+                        "index": 0
+                    }
+                ]
+            ]
+        },
+        "AI: Catchphrase Extract": {
+            "main": [
+                [
+                    {
+                        "node": "Merge Assets",
+                        "type": "main",
+                        "index": 1
+                    }
+                ]
+            ]
+        },
+        "Merge Assets": {
+            "main": [
+                [
+                    {
+                        "node": "IF: Specifics Remain?",
+                        "type": "main",
+                        "index": 0
+                    }
+                ]
+            ]
+        },
+        "IF: Specifics Remain?": {
+            "main": [
+                [
+                    {
+                        "node": "Google Sheets",
+                        "type": "main",
+                        "index": 0
+                    },
+                    {
+                        "node": "Write to Obsidian",
+                        "type": "main",
+                        "index": 0
+                    }
+                ],
+                [
+                    {
+                        "node": "AI: Re-abstract",
+                        "type": "main",
+                        "index": 0
+                    }
+                ]
+            ]
+        },
+        "AI: Re-abstract": {
+            "main": [
+                [
+                    {
+                        "node": "Google Sheets",
+                        "type": "main",
+                        "index": 0
+                    },
+                    {
+                        "node": "Write to Obsidian",
+                        "type": "main",
+                        "index": 0
+                    }
+                ]
+            ]
+        }
+    },
+    "active": false,
+    "settings": {
+        "executionOrder": "v1"
+    }
+}
