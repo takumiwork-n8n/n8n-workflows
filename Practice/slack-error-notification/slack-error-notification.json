@@ -2,109 +2,27 @@
     "nodes": [
         {
             "parameters": {},
-            "id": "2bc6065a-eaf9-45c8-8a09-babafd4030e4",
+            "id": "c719c843-4510-48e1-a02a-6ad4c9683987",
             "name": "ErrorTrigger:Global",
             "type": "n8n-nodes-base.errorTrigger",
             "typeVersion": 1,
             "position": [
-                -928,
-                -48
+                80,
+                -208
             ]
         },
         {
             "parameters": {
-                "assignments": {
-                    "assignments": [
-                        {
-                            "id": "69892da8-9bff-4418-8612-bc98966b1d0f",
-                            "name": "config.appUrl",
-                            "value": "http://localhost:5678",
-                            "type": "string"
-                        },
-                        {
-                            "id": "11e66b65-0cc3-463a-8d0a-8844b04b0807",
-                            "name": "config.slack.channel",
-                            "value": "エラー通知",
-                            "type": "string"
-                        }
-                    ]
-                },
-                "includeOtherFields": true,
-                "options": {
-                    "dotNotation": true
-                }
-            },
-            "type": "n8n-nodes-base.set",
-            "typeVersion": 3.4,
-            "position": [
-                -736,
-                -48
-            ],
-            "id": "5a8cbffc-e296-4600-a3e3-05e7b1b29065",
-            "name": "config"
-        },
-        {
-            "parameters": {
-                "assignments": {
-                    "assignments": [
-                        {
-                            "id": "e8d4b56f-3381-4096-906c-0876c7a6d3d1",
-                            "name": "workflow.url",
-                            "value": "={{ $json.config.appUrl + \"/workflow/\" + $json.workflow.id}}",
-                            "type": "string"
-                        },
-                        {
-                            "id": "bb7e94c9-54cc-43af-be25-a5dbcb39b759",
-                            "name": "workflow.isExecutionError",
-                            "value": "={{ false }}",
-                            "type": "boolean"
-                        },
-                        {
-                            "id": "e56cea7b-5efa-4a16-81a8-622a6d77bae7",
-                            "name": "errorHandlingWorkflow.id",
-                            "value": "={{ $workflow.id }}",
-                            "type": "string"
-                        },
-                        {
-                            "id": "031534a7-36b6-4b73-b52d-00f75a9265a0",
-                            "name": "errorHandlingWorkflow.name",
-                            "value": "={{ $workflow.name }}",
-                            "type": "string"
-                        },
-                        {
-                            "id": "e1c6010f-db46-4964-bbde-5b597b9fc299",
-                            "name": "errorHandlingWorkflow.url",
-                            "value": "={{ $json.config.appUrl + \"/workflow/\" + $workflow.id }}",
-                            "type": "string"
-                        }
-                    ]
-                },
-                "includeOtherFields": true,
-                "options": {
-                    "dotNotation": true
-                }
-            },
-            "type": "n8n-nodes-base.set",
-            "typeVersion": 3.4,
-            "position": [
-                -560,
-                -48
-            ],
-            "id": "f0ba3ce8-4b52-4cb4-9ef4-7d9bd9aaadb8",
-            "name": "Constants"
-        },
-        {
-            "parameters": {
-                "jsCode": "const w = $json.workflow;\nconst e = $json.execution;\n\nreturn [{\n  slack: {\n    channel: $json.config.slack.channel,\n    text: `\n⚠️ *Trigger Error*\n\n*Workflow:* ${w.name}\n*Error:* ${e.error.message}\n\nこのエラーは*ワークフローが実行される前*に発生しています。\nトリガー設定・認証・Cron を確認してください。\n\n• <${w.url}|Workflow設定を開く>\n`.trim()\n  }\n}];\n"
+                "jsCode": "const config = $json.config || {};\nconst w = $json.workflow || {};\nconst e = $json.execution || {};\nconst err = e.error || {};\n\nconst message = String(err.message || '').toLowerCase();\nconst code = String(err.code || '').toLowerCase();\nconst httpStatus = String(err.httpStatus || e.httpStatus || '');\nconst retryCount = Number(e.retryCount ?? 0);\n\n// 実行前（トリガー/認証/Cron等）っぽい場合は lastNodeExecuted が空になりがち\nconst phase = e.lastNodeExecuted ? 'execution' : 'trigger';\n\n// 重要度判定ルール（必要に応じて増やしてください）\nlet severity = 'info';\nlet severityReason = '情報通知';\n\nif (/(auth|token|permission)/.test(message) || /(auth|token|permission)/.test(code) || /^(401|403)$/.test(httpStatus) || retryCount >= 3) {\n  severity = 'critical';\n  severityReason = '認証/アクセス権 or リトライ多発';\n} else if (/(timeout|econnreset|econnrefused|dns)/.test(message) || /(timeout|econnreset|econnrefused|dns)/.test(code) || /^(429|5\\d{2})$/.test(httpStatus)) {\n  severity = 'warning';\n  severityReason = '一時的な接続不良/レート制限/外部障害';\n}\n\nconst channel =\n  severity === 'critical' ? config.slack?.channel?.critical :\n  severity === 'warning' ? config.slack?.channel?.warning :\n  config.slack?.channel?.info;\n\nconst workflowUrl = w.url || $json.workflow?.url || '';\nconst executionUrl = $json.execution?.url || '';\nconst nodeName = err.node || e.lastNodeExecuted || '未特定';\n\nconst title =\n  severity === 'critical' ? '🔥 重大エラー' :\n  severity === 'warning' ? '⚠️ 注意エラー' :\n  'ℹ️ 情報エラー';\n\nconst phaseLine = phase === 'execution'\n  ? '（ワークフロー実行中のエラー）'\n  : '（ワークフロー実行前のエラー：トリガー設定・認証・Cron等を確認）';\n\nconst lines = [\n  `${title} ${phaseLine}`,\n  `*Workflow:* ${w.name || w.id || 'unknown'}`,\n  `*Node:* ${nodeName}`,\n  `*Error:* ${err.message || '詳細なし'}`,\n  `*SeverityReason:* ${severityReason}`,\n  workflowUrl ? `• <${workflowUrl}|Workflowを開く>` : null,\n  executionUrl ? `• <${executionUrl}|Executionログを見る>` : null,\n].filter(Boolean);\n\nreturn [{\n  json: {\n    ...$json,\n    phase,\n    severity,\n    severityReason,\n    slack: {\n      channel,\n      text: lines.join('\\n')\n    }\n  }\n}];\n"
             },
             "type": "n8n-nodes-base.code",
             "typeVersion": 2,
             "position": [
-                -128,
-                48
+                608,
+                -208
             ],
-            "id": "ff2091a5-f372-4e5b-a2a7-3ea74c75fd5f",
-            "name": "Code in JavaScript"
+            "id": "b3169844-4fd6-463b-a2f0-9c9a5546d493",
+            "name": "Classify Severity"
         },
         {
             "parameters": {
@@ -117,13 +35,22 @@
                     },
                     "conditions": [
                         {
-                            "id": "fc017447-3691-4058-8fb8-e56fe49bea24",
-                            "leftValue": "={{ $json.workflow_isExecutionError }}",
-                            "rightValue": false,
+                            "id": "b9f3f68a-6fd6-4f31-9c64-c45c3b7c0e9a",
+                            "leftValue": "={{ $json.severity }}",
+                            "rightValue": "critical",
                             "operator": {
-                                "type": "boolean",
-                                "operation": "true",
+                                "type": "string",
+                                "operation": "equal",
                                 "singleValue": true
+                            }
+                        },
+                        {
+                            "id": "3670cf43-ea0a-4ccd-9925-266d8aa64c37",
+                            "leftValue": "={{ $json.severity }}",
+                            "rightValue": "critical",
+                            "operator": {
+                                "type": "string",
+                                "operation": "equals"
                             }
                         }
                     ],
@@ -134,18 +61,61 @@
             "type": "n8n-nodes-base.if",
             "typeVersion": 2.3,
             "position": [
-                -384,
-                -48
+                784,
+                -208
             ],
-            "id": "cf254cc5-cae4-4527-ac20-a5e4a2ff02e4",
-            "name": "If"
+            "id": "b6b0d853-294a-4c24-b401-6a692fa2895e",
+            "name": "If:Critical"
+        },
+        {
+            "parameters": {
+                "conditions": {
+                    "options": {
+                        "caseSensitive": true,
+                        "leftValue": "",
+                        "typeValidation": "strict",
+                        "version": 3
+                    },
+                    "conditions": [
+                        {
+                            "id": "0f6c25e1-0c0b-4b7a-bf3e-4d8d4f922f52",
+                            "leftValue": "={{ $json.severity }}",
+                            "rightValue": "warning",
+                            "operator": {
+                                "type": "string",
+                                "operation": "equal",
+                                "singleValue": true
+                            }
+                        },
+                        {
+                            "id": "86132321-6882-4b2e-98e9-c9aa342b172d",
+                            "leftValue": "={{ $json.severity }}",
+                            "rightValue": "warning",
+                            "operator": {
+                                "type": "string",
+                                "operation": "equals"
+                            }
+                        }
+                    ],
+                    "combinator": "and"
+                },
+                "options": {}
+            },
+            "type": "n8n-nodes-base.if",
+            "typeVersion": 2.3,
+            "position": [
+                960,
+                -112
+            ],
+            "id": "c67ebca0-37d3-4615-b8df-ffdeba3652a8",
+            "name": "If:Warning"
         },
         {
             "parameters": {
                 "select": "channel",
                 "channelId": {
                     "__rl": true,
-                    "value": "={{ $json.slack.channel }}",
+                    "value": "={{ $json.config.slack.channel.critical }}",
                     "mode": "name"
                 },
                 "text": "={{ $json.slack.text }}",
@@ -154,12 +124,12 @@
             "type": "n8n-nodes-base.slack",
             "typeVersion": 2.4,
             "position": [
-                80,
-                -48
+                1168,
+                -368
             ],
-            "id": "e1c0082a-2f8b-4963-913d-7b4b431049b5",
-            "name": "Send a message1",
-            "webhookId": "ee5b1fbc-5b46-4d71-9d1a-af2da6fdd828",
+            "id": "49e1178e-5f1c-4620-b523-f079e1362a6a",
+            "name": "Slack:Critical",
+            "webhookId": "45e2d135-bdb6-4c1f-ac19-907dc29d67fe",
             "credentials": {
                 "slackApi": {
                     "id": "uv78jPZ831aDUtpk",
@@ -169,16 +139,148 @@
         },
         {
             "parameters": {
-                "jsCode": "const w = $json.workflow;\nconst e = $json.execution;\n\nreturn [{\n  slack: {\n    channel: $json.config.slack.channel,\n    text: `\n🚨 *Execution Error*\n\n*Workflow:* ${w.name}\n*Error:* ${e.error.message}\n*Node:* ${e.lastNodeExecuted}\n\n• <${w.url}|Workflowを開く>\n• <${e.url}|Executionログを見る>\n`.trim()\n  }\n}];\n"
+                "select": "channel",
+                "channelId": {
+                    "__rl": true,
+                    "value": "={{ $json.config.slack.channel.warning }}",
+                    "mode": "name"
+                },
+                "text": "={{ $json.slack.text }}",
+                "otherOptions": {}
             },
-            "type": "n8n-nodes-base.code",
-            "typeVersion": 2,
+            "type": "n8n-nodes-base.slack",
+            "typeVersion": 2.4,
             "position": [
-                -128,
-                -144
+                1168,
+                -192
             ],
-            "id": "8a44b232-3d95-40c4-af8c-6703119755f1",
-            "name": "Code in JavaScript1"
+            "id": "6bcac288-8d93-48eb-aa6e-0cd4814e7a56",
+            "name": "Slack:Warning",
+            "webhookId": "faed6803-7120-4997-a8d0-540cf7b9afdd",
+            "credentials": {
+                "slackApi": {
+                    "id": "uv78jPZ831aDUtpk",
+                    "name": "Slack account"
+                }
+            }
+        },
+        {
+            "parameters": {
+                "select": "channel",
+                "channelId": {
+                    "__rl": true,
+                    "value": "={{ $json.config.slack.channel.info }}",
+                    "mode": "name"
+                },
+                "text": "={{ $json.slack.text }}",
+                "otherOptions": {}
+            },
+            "type": "n8n-nodes-base.slack",
+            "typeVersion": 2.4,
+            "position": [
+                1168,
+                -32
+            ],
+            "id": "4453858a-86ae-4cae-b333-19c68a6268c0",
+            "name": "Slack:Info",
+            "webhookId": "aa4eaac3-d5e3-46f5-8034-b0f3fe29ef4f",
+            "credentials": {
+                "slackApi": {
+                    "id": "uv78jPZ831aDUtpk",
+                    "name": "Slack account"
+                }
+            }
+        },
+        {
+            "parameters": {
+                "assignments": {
+                    "assignments": [
+                        {
+                            "id": "5f2b7e62-9e9b-4b84-9c4a-8bded0d2f6c0",
+                            "name": "config.appUrl",
+                            "value": "http://localhost:5678",
+                            "type": "string"
+                        },
+                        {
+                            "id": "c5b4c95b-34b8-4c0c-8f4a-9d9d3d8a4d7e",
+                            "name": "config.slack.channel.critical",
+                            "value": "エラー通知-critical",
+                            "type": "string"
+                        },
+                        {
+                            "id": "1e8d6b53-7d5a-4b6f-9d12-4bd1d5bb59b1",
+                            "name": "config.slack.channel.warning",
+                            "value": "エラー通知-warning",
+                            "type": "string"
+                        },
+                        {
+                            "id": "1d9f7e1a-2c7d-4b8f-ae7f-3f5a0a3b9bdf",
+                            "name": "config.slack.channel.info",
+                            "value": "エラー通知-Info",
+                            "type": "string"
+                        }
+                    ]
+                },
+                "includeOtherFields": true,
+                "options": {
+                    "dotNotation": true
+                }
+            },
+            "type": "n8n-nodes-base.set",
+            "typeVersion": 3.4,
+            "position": [
+                256,
+                -208
+            ],
+            "id": "6f3398f6-1fbb-44a2-995c-5d23ea9b53e9",
+            "name": "config1"
+        },
+        {
+            "parameters": {
+                "assignments": {
+                    "assignments": [
+                        {
+                            "id": "e8d4b56f-3381-4096-906c-0876c7a6d3d1",
+                            "name": "workflow.url",
+                            "value": "={{ $json.config.appUrl.replace(/\\/$/, '') + \"/workflow/\" + $json.workflow.id }}",
+                            "type": "string"
+                        },
+                        {
+                            "id": "b4fcd2d8-0c98-4b0c-b0bd-6f1cc8e7a1a7",
+                            "name": "execution.url",
+                            "value": "={{ $json.execution?.id ? ($json.config.appUrl.replace(/\\/$/, '') + \"/execution/\" + $json.execution.id) : \"\" }}",
+                            "type": "string"
+                        }
+                    ]
+                },
+                "includeOtherFields": true,
+                "options": {
+                    "dotNotation": true
+                }
+            },
+            "type": "n8n-nodes-base.set",
+            "typeVersion": 3.4,
+            "position": [
+                432,
+                -208
+            ],
+            "id": "0d75cd7c-fb2e-4b63-a428-dbb1b57b991e",
+            "name": "Constants1"
+        },
+        {
+            "parameters": {
+                "content": "Slack通知のエラーハンドリング強化（重要度分岐）を追加。\n\nエラー内容（message/code/httpStatus/retryCount）から severity を critical / warning / info に自動判定\ncritical はオンコール向け、warning/info は通常監視向けに通知チャンネルを出し分け\n通知文面に Workflow名、該当ノード、エラー内容、判定理由、Workflow/Executionリンクを付与\n実行前エラー（トリガー/認証/Cron等）と実行中エラーも区別して案内できるようにした",
+                "height": 608,
+                "width": 1472
+            },
+            "type": "n8n-nodes-base.stickyNote",
+            "position": [
+                0,
+                -464
+            ],
+            "typeVersion": 1,
+            "id": "2f2701e9-0987-47dc-a35b-2add5e3c3a99",
+            "name": "Sticky Note"
         }
     ],
     "connections": {
@@ -186,69 +288,76 @@
             "main": [
                 [
                     {
-                        "node": "config",
+                        "node": "config1",
                         "type": "main",
                         "index": 0
                     }
                 ]
             ]
         },
-        "config": {
+        "Classify Severity": {
             "main": [
                 [
                     {
-                        "node": "Constants",
+                        "node": "If:Critical",
                         "type": "main",
                         "index": 0
                     }
                 ]
             ]
         },
-        "Constants": {
+        "If:Critical": {
             "main": [
                 [
                     {
-                        "node": "If",
-                        "type": "main",
-                        "index": 0
-                    }
-                ]
-            ]
-        },
-        "Code in JavaScript": {
-            "main": [
-                [
-                    {
-                        "node": "Send a message1",
-                        "type": "main",
-                        "index": 0
-                    }
-                ]
-            ]
-        },
-        "If": {
-            "main": [
-                [
-                    {
-                        "node": "Code in JavaScript1",
+                        "node": "Slack:Critical",
                         "type": "main",
                         "index": 0
                     }
                 ],
                 [
                     {
-                        "node": "Code in JavaScript",
+                        "node": "If:Warning",
                         "type": "main",
                         "index": 0
                     }
                 ]
             ]
         },
-        "Code in JavaScript1": {
+        "If:Warning": {
             "main": [
                 [
                     {
-                        "node": "Send a message1",
+                        "node": "Slack:Warning",
+                        "type": "main",
+                        "index": 0
+                    }
+                ],
+                [
+                    {
+                        "node": "Slack:Info",
+                        "type": "main",
+                        "index": 0
+                    }
+                ]
+            ]
+        },
+        "config1": {
+            "main": [
+                [
+                    {
+                        "node": "Constants1",
+                        "type": "main",
+                        "index": 0
+                    }
+                ]
+            ]
+        },
+        "Constants1": {
+            "main": [
+                [
+                    {
+                        "node": "Classify Severity",
                         "type": "main",
                         "index": 0
                     }
@@ -258,6 +367,7 @@
     },
     "pinData": {},
     "meta": {
+        "templateCredsSetupCompleted": true,
         "instanceId": "08f731f92ccc8a5c5da3db6ecfae52595f2e0a818d4d668579fc375e3f9539a9"
     }
 }
