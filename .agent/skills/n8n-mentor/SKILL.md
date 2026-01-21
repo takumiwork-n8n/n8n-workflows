@@ -20,9 +20,8 @@ description: >
 
 ### 1. 現状解析 (Status Analysis)
 - **ログの読み取り**: `/Obsidian-Vault/work-summary/` 内の最新のログを確認し、何に時間を使い、何を得たか（またはどこで詰まったか）を特定する。
-- **スケジュール進捗**: `n8n-mastery-roadmap.md` の「2026 Execution Timeline」を参照し、**現在の月と達成すべき収益目標**を照らし合わせる。
-  - 遅れている場合: 警告を出し、学習密度を上げるよう促す。
-  - 進んでいる場合: 次の四半期（Quarter）の前倒しを提案する。
+- **Daily Plan参照**: `n8n-mastery-roadmap.md` の「Daily Execution Plan」テーブルを確認し、**今日の日付に対応するタスク**を特定する。
+  - 例: 今日が1/22なら「API Integration」がターゲット。
 
 ### 2. インタラクティブ・コーチング (Interactive Coaching)
 - ログから判断できない情報がある場合、またはユーザーのメンタル・リソース状態を確認する必要がある場合、質問を投げかける。

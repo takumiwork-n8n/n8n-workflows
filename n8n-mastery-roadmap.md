@@ -1,42 +1,61 @@
-# n8n Mastery & 2M JPY Income Roadmap
+# 2026 n8n Aggressive Monetization Schedule
 
-このロードマップは、単なる「ツール操作」ではなく、「高単価な自動化ソリューションを提供できるプロフェッショナル」になるための戦略です。
+> [!IMPORTANT]
+> **Mission: 最速で月収200万へ**
+> 技術習得は「手段」であり、ゴールは「稼ぐこと」です。
+> 全ての学習は「案件獲得」と「単価アップ」に直結させます。
 
-## 🎯 目標
-- **n8n技術マスター**: あらゆるAPI、DB、AIを自在に連結できるレベル。
-- **高単価案件の獲得**: 月収200万（単価50万〜100万の案件を2〜4本）を安定させる。
+## 📅 Daily Execution Plan (Jan - Feb)
+
+### 🔥 January: 基礎完遂 & ポートフォリオ 0→1
+| Date | Task (Shakyo/Action) | Goal |
+| :--- | :--- | :--- |
+| **1/21 (Wed)** | **[Error Handling](file:///Users/takuminozawa/Desktop/開発/Google Anitgravity/Playground/Obsidian-Vault/n8n-learning/01-error-handling-mastery.md)** | エラー通知・自己修復の型をマスター。 |
+| **1/22 (Thu)** | **[API Integration]** (HTTP Request) | 認証(Auth)・GET/POST・ページネーションを完全理解。 |
+| **1/23 (Fri)** | **[Data Transformation]** (Code Node) | JSON操作・日付変換・正規表現をJSで書けるようにする。 |
+| **1/24 (Sat)** | **[Webhook]** (Real-time Trigger) | 外部ツールからのデータ受信・即時応答フローの構築。 |
+| **1/25 (Sun)** | **[Custom Challenge]** | 過去3日の技術を組み合わせた「オリジナルツール」を1つ作成。 |
+| **1/26 (Mon)** | **[GitHub Portfolio 1]** | 作成したツールをGitHubへPush。READMEを営業資料レベルで書く。 |
+| **1/27 (Tue)** | **Deploy & Test** | n8n自己ホスト環境(Docker)のメンテ・アップデート手順確認。 |
+| **1/28-31** | **[Review & Catch-up]** | 1月の遅れを取り戻す予備日 + 2月の戦略練り直し。 |
+
+### 🚀 February: 実績作り & 初収益
+| Week | Focus | Action Items |
+| :--- | :--- | :--- |
+| **Week 1** | **Portfolio Build** | ・Web Scraping (Puppeteer) テンプレ作成<br>・SNS Auto-Post (X/Linked in) テンプレ作成<br>・Google Sheets Sync (双方向同期) テンプレ作成 |
+| **Week 2** | **Sales Start** | ・クラウドソーシング (Lancers/Upwork) 登録完了<br>・プロフ充実 (GitHubリンク掲載)<br>・**毎日3件** の提案文送付 |
+| **Week 3** | **First Delivery** | ・初案件獲得 (または仮想案件シミュレーション)<br>・**3日以内** に納品するスピード訓練 |
+| **Week 4** | **Value Up** | ・納品物への「付加価値 (ドキュメント/動画解説)」追加訓練<br>・3月の単価アップ戦略策定 |
 
 ---
 
-## 🏗️ 4段階のフェーズ
+## 📅 Q2-Q4 Execution Timeline
 
-### Phase 1: 基礎 & 写経マスター (1-2ヶ月)
-- **Technical**:
-  - すべての基本ノード（Set, Merge, Split In Batches, Code）の完全理解。
-  - **公式テンプレートの写経**: 優れた構成をそのまま再現し、ロジックを体得する。
-  - HTTP Requestノードによる外部APIとの自在な連携。
-- **Outcome**: 既存業務の自動化ができ、かつ「プロが書いたフロー」の型が身についている。
+### Q2: 高単価 niche への参入 (Apr - Jun)
+**Theme: "AI Agent Specialist"**
+- **Apr**: 
+  - LangChain / Vector DB を駆使した「社内QA bot」「自律型リサーチAgent」を商材化。
+  - 単価30万〜50万のパッケージ商品を開発。
+- **May**: 
+  - 企業への直接営業（またはSNS経由のインバウンド）開始。
+  - **Revenue Goal**: 50万/月
+- **Jun**: 
+  - 最初の「大型案件（50万以上）」を獲得・完遂。
 
-### Phase 2: カスタム & 応用設計 (2-3ヶ月)
-- **Technical**:
-  - テンプレートをベースにした自社用・特定用途へのカスタマイズ。
-  - LangChainノードを使ったAI Agentの構築（Gemini, OpenAI）。
-  - Agentic Workflow（AIが自分で考えてループを回す構成）の設計。
-- **Outcome**: 既存の型を壊し、顧客に最適な独自ソリューションを構築できる。
+### Q3: 安定 & スケール (Jul - Sep)
+**Theme: "System Architecture"**
+- **Jul - Aug**: 
+  - エラーハンドリング、自動リトライ、監視システムを標準装備し「保守契約（リテイナー）」を取る。
+  - **DevOps**: GitHub連携、CI/CDによる自動デプロイ確率。
+- **Sep**: 
+  - **Revenue Goal**: 100万/月（フロー70万 + ストック30万）
 
-### Phase 3: 堅牢性 & エンタープライズ品質 (3-4ヶ月)
-- **Technical**:
-  - グローバルエラーハンドリング、リトライ、自己修復ロジックの実装。
-  - バッチ処理の最適化（大量データでも止まらないワークフロー）。
-  - セキュリティ、環境変数管理、認証の高度化。
-- **Outcome**: 企業の本番環境に導入できる「壊れないシステム」が構築できる（保守費も獲得可能）。
-
-### Phase 4: ビジネス・アーキテクト & 案件獲得 (永続)
-- **Business**:
-  - **ヒアリング力**: 顧客の「痛み」からROI（投資対効果）を計算し、提案書を作る力。
-  - **ソリューション設計**: 単発の自動化ではなく、業務全体のプロセス改善をデザインする。
-  - **営業・ブランディング**: 実績のテンプレート化、GitHub公開、SNS発信。
-- **Outcome**: 単単価100万以上の「業務改善コンサル」としての地位を確立。
+### Q4: 2M 達成 & 組織化 (Oct - Dec)
+**Theme: "Business Automation Partner"**
+- **Oct - Dec**: 
+  - 顧客の業務プロセス全体を設計するコンサルティング契約。
+  - 複数案件を並行稼働させるための「自分用管理システム」の構築。
+  - **Final Goal**: **月収200万** (50万×2本 + 100万×1本 あるいは 保守積み上げ)
 
 ---
 
