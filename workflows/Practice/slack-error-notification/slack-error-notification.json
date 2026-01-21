@@ -1,0 +1,263 @@
+{
+    "nodes": [
+        {
+            "parameters": {},
+            "id": "2bc6065a-eaf9-45c8-8a09-babafd4030e4",
+            "name": "ErrorTrigger:Global",
+            "type": "n8n-nodes-base.errorTrigger",
+            "typeVersion": 1,
+            "position": [
+                -928,
+                -48
+            ]
+        },
+        {
+            "parameters": {
+                "assignments": {
+                    "assignments": [
+                        {
+                            "id": "69892da8-9bff-4418-8612-bc98966b1d0f",
+                            "name": "config.appUrl",
+                            "value": "http://localhost:5678",
+                            "type": "string"
+                        },
+                        {
+                            "id": "11e66b65-0cc3-463a-8d0a-8844b04b0807",
+                            "name": "config.slack.channel",
+                            "value": "エラー通知",
+                            "type": "string"
+                        }
+                    ]
+                },
+                "includeOtherFields": true,
+                "options": {
+                    "dotNotation": true
+                }
+            },
+            "type": "n8n-nodes-base.set",
+            "typeVersion": 3.4,
+            "position": [
+                -736,
+                -48
+            ],
+            "id": "5a8cbffc-e296-4600-a3e3-05e7b1b29065",
+            "name": "config"
+        },
+        {
+            "parameters": {
+                "assignments": {
+                    "assignments": [
+                        {
+                            "id": "e8d4b56f-3381-4096-906c-0876c7a6d3d1",
+                            "name": "workflow.url",
+                            "value": "={{ $json.config.appUrl + \"/workflow/\" + $json.workflow.id}}",
+                            "type": "string"
+                        },
+                        {
+                            "id": "bb7e94c9-54cc-43af-be25-a5dbcb39b759",
+                            "name": "workflow.isExecutionError",
+                            "value": "={{ false }}",
+                            "type": "boolean"
+                        },
+                        {
+                            "id": "e56cea7b-5efa-4a16-81a8-622a6d77bae7",
+                            "name": "errorHandlingWorkflow.id",
+                            "value": "={{ $workflow.id }}",
+                            "type": "string"
+                        },
+                        {
+                            "id": "031534a7-36b6-4b73-b52d-00f75a9265a0",
+                            "name": "errorHandlingWorkflow.name",
+                            "value": "={{ $workflow.name }}",
+                            "type": "string"
+                        },
+                        {
+                            "id": "e1c6010f-db46-4964-bbde-5b597b9fc299",
+                            "name": "errorHandlingWorkflow.url",
+                            "value": "={{ $json.config.appUrl + \"/workflow/\" + $workflow.id }}",
+                            "type": "string"
+                        }
+                    ]
+                },
+                "includeOtherFields": true,
+                "options": {
+                    "dotNotation": true
+                }
+            },
+            "type": "n8n-nodes-base.set",
+            "typeVersion": 3.4,
+            "position": [
+                -560,
+                -48
+            ],
+            "id": "f0ba3ce8-4b52-4cb4-9ef4-7d9bd9aaadb8",
+            "name": "Constants"
+        },
+        {
+            "parameters": {
+                "jsCode": "const w = $json.workflow;\nconst e = $json.execution;\n\nreturn [{\n  slack: {\n    channel: $json.config.slack.channel,\n    text: `\n⚠️ *Trigger Error*\n\n*Workflow:* ${w.name}\n*Error:* ${e.error.message}\n\nこのエラーは*ワークフローが実行される前*に発生しています。\nトリガー設定・認証・Cron を確認してください。\n\n• <${w.url}|Workflow設定を開く>\n`.trim()\n  }\n}];\n"
+            },
+            "type": "n8n-nodes-base.code",
+            "typeVersion": 2,
+            "position": [
+                -128,
+                48
+            ],
+            "id": "ff2091a5-f372-4e5b-a2a7-3ea74c75fd5f",
+            "name": "Code in JavaScript"
+        },
+        {
+            "parameters": {
+                "conditions": {
+                    "options": {
+                        "caseSensitive": true,
+                        "leftValue": "",
+                        "typeValidation": "strict",
+                        "version": 3
+                    },
+                    "conditions": [
+                        {
+                            "id": "fc017447-3691-4058-8fb8-e56fe49bea24",
+                            "leftValue": "={{ $json.workflow_isExecutionError }}",
+                            "rightValue": false,
+                            "operator": {
+                                "type": "boolean",
+                                "operation": "true",
+                                "singleValue": true
+                            }
+                        }
+                    ],
+                    "combinator": "and"
+                },
+                "options": {}
+            },
+            "type": "n8n-nodes-base.if",
+            "typeVersion": 2.3,
+            "position": [
+                -384,
+                -48
+            ],
+            "id": "cf254cc5-cae4-4527-ac20-a5e4a2ff02e4",
+            "name": "If"
+        },
+        {
+            "parameters": {
+                "select": "channel",
+                "channelId": {
+                    "__rl": true,
+                    "value": "={{ $json.slack.channel }}",
+                    "mode": "name"
+                },
+                "text": "={{ $json.slack.text }}",
+                "otherOptions": {}
+            },
+            "type": "n8n-nodes-base.slack",
+            "typeVersion": 2.4,
+            "position": [
+                80,
+                -48
+            ],
+            "id": "e1c0082a-2f8b-4963-913d-7b4b431049b5",
+            "name": "Send a message1",
+            "webhookId": "ee5b1fbc-5b46-4d71-9d1a-af2da6fdd828",
+            "credentials": {
+                "slackApi": {
+                    "id": "uv78jPZ831aDUtpk",
+                    "name": "Slack account"
+                }
+            }
+        },
+        {
+            "parameters": {
+                "jsCode": "const w = $json.workflow;\nconst e = $json.execution;\n\nreturn [{\n  slack: {\n    channel: $json.config.slack.channel,\n    text: `\n🚨 *Execution Error*\n\n*Workflow:* ${w.name}\n*Error:* ${e.error.message}\n*Node:* ${e.lastNodeExecuted}\n\n• <${w.url}|Workflowを開く>\n• <${e.url}|Executionログを見る>\n`.trim()\n  }\n}];\n"
+            },
+            "type": "n8n-nodes-base.code",
+            "typeVersion": 2,
+            "position": [
+                -128,
+                -144
+            ],
+            "id": "8a44b232-3d95-40c4-af8c-6703119755f1",
+            "name": "Code in JavaScript1"
+        }
+    ],
+    "connections": {
+        "ErrorTrigger:Global": {
+            "main": [
+                [
+                    {
+                        "node": "config",
+                        "type": "main",
+                        "index": 0
+                    }
+                ]
+            ]
+        },
+        "config": {
+            "main": [
+                [
+                    {
+                        "node": "Constants",
+                        "type": "main",
+                        "index": 0
+                    }
+                ]
+            ]
+        },
+        "Constants": {
+            "main": [
+                [
+                    {
+                        "node": "If",
+                        "type": "main",
+                        "index": 0
+                    }
+                ]
+            ]
+        },
+        "Code in JavaScript": {
+            "main": [
+                [
+                    {
+                        "node": "Send a message1",
+                        "type": "main",
+                        "index": 0
+                    }
+                ]
+            ]
+        },
+        "If": {
+            "main": [
+                [
+                    {
+                        "node": "Code in JavaScript1",
+                        "type": "main",
+                        "index": 0
+                    }
+                ],
+                [
+                    {
+                        "node": "Code in JavaScript",
+                        "type": "main",
+                        "index": 0
+                    }
+                ]
+            ]
+        },
+        "Code in JavaScript1": {
+            "main": [
+                [
+                    {
+                        "node": "Send a message1",
+                        "type": "main",
+                        "index": 0
+                    }
+                ]
+            ]
+        }
+    },
+    "pinData": {},
+    "meta": {
+        "instanceId": "08f731f92ccc8a5c5da3db6ecfae52595f2e0a818d4d668579fc375e3f9539a9"
+    }
+}
