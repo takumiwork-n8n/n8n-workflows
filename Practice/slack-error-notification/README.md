@@ -1,53 +1,48 @@
-# Slack Error Notification Handler
+# Slack エラー通知ハンドラー
 
-> **Note**: This workflow is a reusable error handling component designed to send alert notifications to Slack when other workflows fail.
+> **Note**: このワークフローは、他のワークフローが失敗した際に Slack へアラート通知を送信するための、再利用可能なエラーハンドリング専用コンポーネントです。
 
-## 📊 Evaluation Report
+## 📊 評価レポート
 
-| Metric | Score (1-5) | Comment |
+| 指標 | スコア (1-5) | コメント |
 | :--- | :---: | :--- |
-| **Structure** | 5 | Clean linear flow with clear logic separation (Trigger -> Config -> If -> Slack). |
-| **Maintainability** | 5 | Uses `config` node to centralize settings (appUrl, channel). Excellent separation of concerns. |
-| **Scalability** | 4 | Can be easily extended to support other notification channels (Email, Teams) due to modular design. |
-| **Reusability** | 5 | Designed as a generic "Error Workflow" that can be attached to any number of parent workflows. |
-| **Error Tolerance** | 5 | Handles both 'Execution Error' and 'Trigger Error' distinctly, providing context-aware alerts. |
-| **Total Score** | **4.8 / 5.0** | **Excellent (Professional Grade)** |
+| **構造** | 5 | トリガー、構成、条件分岐、通知という流れるような線形構造で、非常に分かりやすい。 |
+| **保守性** | 5 | `config` ノードで URL やチャンネル名を一括管理。変更に強い設計。 |
+| **拡張性** | 4 | メールや Teams など、他の通知チャンネルの追加も容易なモジュール設計。 |
+| **再利用性** | 5 | 汎用的な「エラー用ワークフロー」として、あらゆるプロジェクトから呼び出し可能。 |
+| **エラー耐性** | 5 | 「実行エラー」と「トリガーエラー」を判別し、文脈に応じた通知を行う万全の構え。 |
+| **総合点** | **4.8 / 5.0** | **プロフェッショナル級** |
 
-## 🧜‍♀️ Workflow Diagram
+## 🧜‍♀️ ワークフロー構成図
 
 ```mermaid
 graph LR
-    ErrorTrigger(Error Trigger) --> Config(Config: Set)
-    Config --> Constants(Constants: Set)
-    Constants --> If{If: Exec vs Trigger}
+    ErrorTrigger(エラートリガー) --> Config(設定ノード)
+    Config --> Constants(定数設定)
+    Constants --> If{エラー種別判定}
     
-    If -- Execution Error --> ExecCode(Code: Format Execution Msg)
-    If -- Trigger Error --> TrigCode(Code: Format Trigger Msg)
+    If -- 実行時エラー --> ExecCode(JS: 通知文整形)
+    If -- トリガーエラー --> TrigCode(JS: 通知文整形)
     
-    ExecCode --> Slack(Slack: Send Alert)
+    ExecCode --> Slack(Slack通知送信)
     TrigCode --> Slack
 ```
 
-## 📝 Features & Usage
+## 📝 機能と使い方
 
-### Key Capabilities
-1.  **Dual Error Detection**: Distinguishes between runtime errors (Execution Error) and configuration/start-up errors (Trigger Error).
-2.  **Smart Formatting**: Generates clean, actionable Slack messages with direct links to the failing workflow and execution log.
-3.  **Centralized Config**: Slack channel name and n8n instance URL are managed in a single `config` node.
-4.  **No Merge Node**: Avoids the "0 items" trap by using direct paths from the `If` node to the `Slack` node.
+### 特徴
+1.  **2種類のエラー検知**: 実行中の失敗（Execution Error）と、開始前の設定ミス（Trigger Error）を区別して通知します。
+2.  **スマートな通知内容**: エラー内容だけでなく、**該当ワークフローへの直リンク**と**ログへのリンク**を自動生成。ワンクリックで復旧作業に入れます。
+3.  **中央集中型設定**: Slackのチャンネル名やn8nのURLは、1つの `config` ノードで管理。環境が変わっても修正は1箇所で済みます。
+4.  **Mergeノードの回避**: 以前の失敗を活かし、不確実な Merge ノードを使わず、条件分岐から直接 Slack ノードへ流すことで、通知漏れを防いでいます。
 
-### How to Use
-1.  **Import**: Import this JSON into your n8n instance.
-2.  **Configure**: Update the `config` node with your:
-    *   `appUrl`: Your n8n instance URL (e.g., `http://localhost:5678` or `https://n8n.example.com`).
-    *   `slack.channel`: The channel name/ID where you want alerts.
-3.  **Activate**: Save and activate this workflow.
-4.  **Attach**: In any other workflow, go to **Settings** -> **Error Workflow** and select `Slack Error Notification Handler`.
-
-## 🛠️ Configuration Details
-*   **Error Trigger**: Catches all errors from calling workflows.
-*   **Code Nodes**: Uses JavaScript to construct the Slack message payload dynamically based on the error context (`$execution.error.message`, `$execution.url`).
-*   **Slack Node**: Sends the pre-formatted text block.
+### 使い方
+1.  **インポート**: この JSON ファイルを n8n にインポートします。
+2.  **設定更新**: `config` ノード内の以下を書き換えてください。
+    *   `appUrl`: あなたの n8n インスタンスの URL（例: `https://n8n.your-domain.com`）
+    *   `slack.channel`: 通知を送りたい Slack チャンネル名 or ID
+3.  **有効化**: 保存して「Active」にします。
+4.  **連携**: 監視したい他のワークフローの **Settings** > **Error Workflow** で、このワークフローを選択します。
 
 ---
 *Created by n8n-expert for n8n Mastery Course*

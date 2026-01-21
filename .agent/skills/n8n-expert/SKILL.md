@@ -10,6 +10,10 @@ description: >
 ## Purpose / Outcome
 n8nワークフローの導入検討から、詳細設計、実機へのデプロイ・検証、品質評価、そしてGitHub/Obsidianへの資産保存までを一気通貫で実行し、ユーザーの自動化プロセスを最高品質で維持・管理することを目的とする。
 
+## Best Practices
+- **Japanese First**: GitHub・Obsidianに出力するドキュメント（README等）は、常に日本語で生成する。
+- **1 Node 1 Responsibility**: ノードの責務を分離し、保守性を高める。
+
 ## When to use
 - **Design**: 新しい自動化フローを作りたいとき。
 - **Deploy/Validate**: 作成したワークフローをn8nインスタンスに反映し、動作検証を行いたいとき。
@@ -24,7 +28,7 @@ GitHubとObsidianへ、新規作成・上書き更新を自動判断して同期
   - フォルダパス: `/Practice/[folder-name]/`
   - 既存チェック: 対象フォルダや同名JSONが既にあるか `ls` で確認。
   - 新規の場合: 新しいフォルダを作成。コミットメッセージは `feat: Add [workflow-name]`。
-  - 更新の場合: 既存ファイルを上書き。コミットメッセージは `update: Sync [workflow-name]`。
+  - 更新の場合: 既存ファイルを上書き。**READMEは必ず日本語で生成・再生成する**。コミットメッセージは `update: Sync [workflow-name]`。
 - **Git同期 (Safe Push)**:
   - `git add .`, `git commit`, `git push origin main` を実行。
 
