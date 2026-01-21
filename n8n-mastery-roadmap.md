@@ -21,9 +21,10 @@
 - ワークフローができたら: **「GitHubに保存して」**
 - Agent (Expert) が自動でJSON解析・README作成・Pushまで行います。
 
-### 4. ログアウト (End)
+### 4. ログアウト (End & Content Gen)
 - 1日の終わりに: **「今日のログ書いて」**
-- 学びをObsidianに記録し、進捗率を更新して終了です。
+- 学びをObsidianに記録し、さらに**「販売用教材のチャプター」を自動生成**して `Product-Drafts` フォルダに保存します。
+- これが将来の「n8n完全攻略コンテンツ」の原稿になります。
 
 ---
 
@@ -54,10 +55,10 @@
 ## 📅 Q2-Q4 Execution Timeline
 
 ### Q2: 高単価 niche への参入 (Apr - Jun)
-**Theme: "AI Agent Specialist"**
+**Theme: "AI Agent Specialist & Content Seller"**
 - **Apr**: 
   - LangChain / Vector DB を駆使した「社内QA bot」「自律型リサーチAgent」を商材化。
-  - 単価30万〜50万のパッケージ商品を開発。
+  - **Content**: 1-3月の学習ログを体系化した「n8n入門 & 案件獲得マニュアル」をNote/Brainで販売開始。
 - **May**: 
   - 企業への直接営業（またはSNS経由のインバウンド）開始。
   - **Revenue Goal**: 50万/月
