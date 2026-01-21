@@ -1,0 +1,891 @@
+{
+    "nodes": [
+        {
+            "parameters": {
+                "formTitle": "Generate X Template",
+                "formDescription": "気になった投稿を入力してください\n",
+                "formFields": {
+                    "values": [
+                        {
+                            "fieldLabel": "X投稿 or アイデア",
+                            "fieldType": "textarea",
+                            "placeholder": "投稿 / 投稿者"
+                        },
+                        {
+                            "fieldLabel": "URL",
+                            "placeholder": "URLを入力してください"
+                        }
+                    ]
+                },
+                "options": {}
+            },
+            "type": "n8n-nodes-base.formTrigger",
+            "typeVersion": 2.5,
+            "position": [
+                0,
+                -128
+            ],
+            "id": "c2ee38f0-4961-4d5f-9d37-c4408eefab8c",
+            "name": "On form submission",
+            "webhookId": "20664c36-192d-4c34-8aa3-14f8e675ac7e"
+        },
+        {
+            "parameters": {
+                "assignments": {
+                    "assignments": [
+                        {
+                            "id": "d5586996-1f80-414a-9ea8-9ddd5e6639bb",
+                            "name": "raw_text",
+                            "value": "={{ $json['X投稿 or アイデア'] }}",
+                            "type": "string"
+                        },
+                        {
+                            "id": "49111a45-ecf1-42e3-8b95-ddbfb35a2aff",
+                            "name": "url",
+                            "value": "={{ $json.URL }}",
+                            "type": "string"
+                        }
+                    ]
+                },
+                "options": {}
+            },
+            "type": "n8n-nodes-base.set",
+            "typeVersion": 3.4,
+            "position": [
+                208,
+                -128
+            ],
+            "id": "d7330f72-c495-4a48-8847-df81b816c039",
+            "name": "Normalize Input"
+        },
+        {
+            "parameters": {
+                "modelName": "models/gemini-3-flash-preview",
+                "options": {}
+            },
+            "type": "@n8n/n8n-nodes-langchain.lmChatGoogleGemini",
+            "typeVersion": 1,
+            "position": [
+                448,
+                -96
+            ],
+            "id": "cd238fed-afd4-47bb-89bd-9b77e0554541",
+            "name": "Google Gemini Chat Model",
+            "credentials": {
+                "googlePalmApi": {
+                    "id": "rCOopoQB7i0IPbRI",
+                    "name": "Free: Google Gemini(PaLM) Api account"
+                }
+            }
+        },
+        {
+            "parameters": {
+                "schemaType": "manual",
+                "inputSchema": "{\n  \"template_type\": \"string\",\n  \"template\": {\n    \"hook\": { \"instruction\": \"string\" },\n    \"core\": { \"instruction\": \"string\" },\n    \"body\": [\n      { \"instruction\": \"string\" }\n    ],\n    \"proof\": { \"instruction\": \"string\" },\n    \"cta\": { \"instruction\": \"string\" }\n  },\n  \"placeholders\": [\n    { \"key\": \"string\", \"hint\": \"string\" }\n  ],\n  \"sanitized_terms\": [\n    { \"from\": \"string\", \"to\": \"string\" }\n  ]\n}"
+            },
+            "type": "@n8n/n8n-nodes-langchain.outputParserStructured",
+            "typeVersion": 1.3,
+            "position": [
+                592,
+                -96
+            ],
+            "id": "1d0efe1b-3cfb-4c2b-854b-df7bdba49712",
+            "name": "Structured Output Parser"
+        },
+        {
+            "parameters": {
+                "modelName": "models/gemini-2.5-flash-lite",
+                "options": {}
+            },
+            "type": "@n8n/n8n-nodes-langchain.lmChatGoogleGemini",
+            "typeVersion": 1,
+            "position": [
+                448,
+                208
+            ],
+            "id": "e4822d88-fce4-4183-95d7-18540adb5a46",
+            "name": "Google Gemini Chat Model1",
+            "credentials": {
+                "googlePalmApi": {
+                    "id": "rCOopoQB7i0IPbRI",
+                    "name": "Free: Google Gemini(PaLM) Api account"
+                }
+            }
+        },
+        {
+            "parameters": {
+                "text": "={{ $json.raw_text }}",
+                "schemaType": "manual",
+                "inputSchema": "={\n  \"type\": \"object\",\n  \"properties\": {\n    \"catchphrases\": {\n      \"type\": \"array\",\n      \"minItems\": 5,\n      \"maxItems\": 15,\n      \"items\": {\n        \"type\": \"object\",\n        \"properties\": {\n          \"text\": { \"type\": \"string\", \"description\": \"キャッチフレーズ（1文、短め）。固有名詞や数値はプレースホルダ化。\" },\n          \"pattern\": { \"type\": \"string\", \"enum\": [\"疑問型\", \"断定型\", \"否定型\", \"ギャップ型\"], \"description\": \"キャッチの型\" },\n          \"usage\": { \"type\": \"string\", \"enum\": [\"冒頭\", \"見出し\", \"CTA\"], \"description\": \"使いどころ\" },\n          \"emotion\": { \"type\": \"string\", \"enum\": [\"不安\", \"期待\", \"危機感\", \"共感\", \"希望\"], \"description\": \"狙う感情\" },\n          \"placeholders_used\": {\n            \"type\": \"array\",\n            \"items\": { \"type\": \"string\" },\n            \"description\": \"使ったプレースホルダ一覧（例: {AI_TOOL}, {TIME_RANGE}）\"\n          }\n        },\n        \"required\": [\"text\", \"pattern\", \"usage\", \"emotion\"]\n      }\n    }\n  },\n  \"required\": [\"catchphrases\"]\n}\n",
+                "options": {
+                    "systemPromptTemplate": "=あなたはSNS投稿から「再利用可能なキャッチフレーズ」を抽出する抽出エンジンです。次を厳守してください。\n\n* 出力はJSONスキーマに準拠したデータのみ。感想・共感・解説は禁止。\n* キャッチは1文、短く、単体で成立するもの。\n* 固有名詞・会社名・ツール名・数値・期間・場所は必ずプレースホルダ化する（例: <<AI_TOOL>>, <<TIME_RANGE>>, <<NUMBER>>, <<ORG_TYPE>>）。\n* 元文の長い文をそのままコピーせず、キャッチとして短く圧縮して作る。\n* 5個を厳選して抽出し、pattern/usage/emotion を必ず付与する。\n"
+                }
+            },
+            "type": "@n8n/n8n-nodes-langchain.informationExtractor",
+            "typeVersion": 1.2,
+            "position": [
+                448,
+                64
+            ],
+            "id": "984af096-7a0e-4acc-b32d-cfaf2dd931b1",
+            "name": "CatchphraseExtractor"
+        },
+        {
+            "parameters": {
+                "mode": "combine",
+                "fieldsToMatchString": "combine_key",
+                "options": {}
+            },
+            "type": "n8n-nodes-base.merge",
+            "typeVersion": 3.2,
+            "position": [
+                992,
+                -112
+            ],
+            "id": "4bc63549-576b-4891-8008-3490febe2cb3",
+            "name": "Merge: Template and Phrase"
+        },
+        {
+            "parameters": {
+                "assignments": {
+                    "assignments": [
+                        {
+                            "id": "65187abd-90c1-4b89-a157-ee6819e3aad6",
+                            "name": "combine_key",
+                            "value": "=combine",
+                            "type": "string"
+                        },
+                        {
+                            "id": "beaf6a53-3f83-4cb6-b3d5-140448ab3481",
+                            "name": "template_output",
+                            "value": "={{ $json.output }}",
+                            "type": "object"
+                        }
+                    ]
+                },
+                "options": {}
+            },
+            "type": "n8n-nodes-base.set",
+            "typeVersion": 3.4,
+            "position": [
+                752,
+                -288
+            ],
+            "id": "09503cfd-9769-410b-be25-766675e58bd9",
+            "name": "add combine_key"
+        },
+        {
+            "parameters": {
+                "assignments": {
+                    "assignments": [
+                        {
+                            "id": "65187abd-90c1-4b89-a157-ee6819e3aad6",
+                            "name": "combine_key",
+                            "value": "=combine",
+                            "type": "string"
+                        },
+                        {
+                            "id": "3e0fa3ea-d3b2-46cf-ba86-545879d0569f",
+                            "name": "phrase_output",
+                            "value": "={{ $json.output.catchphrases }}",
+                            "type": "array"
+                        }
+                    ]
+                },
+                "options": {}
+            },
+            "type": "n8n-nodes-base.set",
+            "typeVersion": 3.4,
+            "position": [
+                752,
+                64
+            ],
+            "id": "e1cd67c4-1d05-4dc4-b8ed-d5efdcacdf20",
+            "name": "add combine_key1"
+        },
+        {
+            "parameters": {
+                "promptType": "define",
+                "text": "=以下の raw_text を「再利用可能なテンプレ資産」に変換してください。\n\n【入力】\nraw_text:\n{{ $json.raw_text }}\n\nurl（あれば参考）:\n{{ $json.url }}\n\n【出力要件】\n\n* template_type を必ず1つ選ぶ（claim_reason / how_to / problem_solution / story / list / unknown）\n* template は “instruction（差し替え前提の指示文）” で埋める。本文の要約や言い換えは禁止。\n* body は 1〜5個の配列にする（how_to なら手順っぽく増やしてOK）\n* placeholders は最低3つ（TARGET / PAIN / BENEFIT）を含め、必要なら追加してよい\n* sanitized_terms にには、置換した具体語を「from→to」で列挙する（3〜10件目安）\n* 固有名詞/会社名/ツール名/数値/期間/場所が残っていないか自己チェックし、残りそうなら追加でプレースホルダ化する\n\n【プレースホルダ例（参考）】\n\n* ツール/AI名 → {AI_TOOL}\n* 時間/期間 → {TIME_RANGE}\n* 割合/数値 → {NUMBER} / {PERCENT}\n* 会社/組織 → {ORG} / {ORG_TYPE}\n* 業務名 → {TASK}\n* 成果物 → {DELIVERABLE}\n* 対象顧客 → {TARGET}\n\nでは開始。",
+                "hasOutputParser": true,
+                "messages": {
+                    "messageValues": [
+                        {
+                            "message": "=あなたは「SNS投稿を再利用可能なテンプレ資産に変換する分類・抽象化エンジン」です。\n\n## 目的\n\nユーザーから渡される raw_text を読み取り、\n\n1. 投稿タイプを分類し（template_type）\n2. 再利用可能なテンプレ構造（instructionベース）に変換し\n3. 固有名詞・企業名・ツール名・数値・期間・場所などの具体情報をプレースホルダに置換して抽象化する\n   ことだけを行う。\n\n## 厳守ルール\n\n* “感想/共感/提案/質問返し”は禁止。判断と抽出だけ。\n* *元文の言い換えや要約は禁止。テンプレは「再利用できる指示（instruction）」で書く。*\n* *固有情報は必ずプレースホルダ化する（例: Claude→{AI_TOOL}, 10〜15分→{TIME_RANGE}, 大手コンサル→{ORG_TYPE}）。*\n* *分類ラベルは次の列挙以外を出してはいけない：*\n  *claim_reason / how_to / problem_solution / story / list / unknown*\n* *迷ったら claim_reason に倒す（unknown連発禁止）。*\n* *出力は、接続された Output Parser のスキーマに100%準拠したJSONのみ（余計な文章を出さない）。*"
+                        }
+                    ]
+                },
+                "batching": {}
+            },
+            "type": "@n8n/n8n-nodes-langchain.chainLlm",
+            "typeVersion": 1.9,
+            "position": [
+                448,
+                -288
+            ],
+            "id": "2c49ddd9-899b-4ed7-ae8c-4065bda7764b",
+            "name": "Basic LLM Chain"
+        },
+        {
+            "parameters": {
+                "assignments": {
+                    "assignments": [
+                        {
+                            "id": "2d84f076-ff94-48d5-9b9a-12793d9bf9c2",
+                            "name": "source_url",
+                            "value": "={{ $('Normalize Input').item.json.url }}",
+                            "type": "string"
+                        },
+                        {
+                            "id": "b05c01ce-83a2-4afd-bf5a-bc832e8a1480",
+                            "name": "source_text",
+                            "value": "={{ $('Normalize Input').item.json.raw_text }}",
+                            "type": "string"
+                        },
+                        {
+                            "id": "3a176ebd-63e6-45b6-b44b-71e59613337b",
+                            "name": "template_pack",
+                            "value": "={{ $json.template_output }}",
+                            "type": "object"
+                        },
+                        {
+                            "id": "1bf16a98-b0b7-4d2a-b528-21206c376fa5",
+                            "name": "catchphrase_pack",
+                            "value": "={{ $json.phrase_output }}",
+                            "type": "array"
+                        }
+                    ]
+                },
+                "options": {}
+            },
+            "type": "n8n-nodes-base.set",
+            "typeVersion": 3.4,
+            "position": [
+                1168,
+                -112
+            ],
+            "id": "fb5b2b4d-16bb-44cb-9b82-1e3f117e9de2",
+            "name": "Set:UnifyPayload"
+        },
+        {
+            "parameters": {
+                "jsCode": "// Code node (JavaScript)\n// Purpose: normalize placeholder notation to <<PLACEHOLDER>> across the whole payload\n// Input expected (from Set:UnifyPayload):\n// {\n//   source_url, source_text,\n//   template_pack: { template, body[], placeholders[], sanitized_terms[] ... },\n//   catchphrase_pack: [ { text, placeholders_used[] ... }, ... ]\n// }\n//\n// Output: same structure, but placeholders normalized.\n// - converts {AI_TOOL} -> <<AI_TOOL>>\n// - converts HTML-escaped &lt;&lt;AI_TOOL&gt;&gt; -> <<AI_TOOL>>\n// - also normalizes placeholders_used arrays\n\nfunction decodeHtmlAngleBrackets(str) {\n  return str\n    .replaceAll(\"&lt;&lt;\", \"<<\")\n    .replaceAll(\"&gt;&gt;\", \">>\")\n    .replaceAll(\"&lt;\", \"<\")\n    .replaceAll(\"&gt;\", \">\");\n}\n\nfunction normalizePlaceholdersInString(str) {\n  if (typeof str !== \"string\") return str;\n\n  // 1) decode HTML escapes that n8n sometimes shows in text fields\n  let s = decodeHtmlAngleBrackets(str);\n\n  // 2) convert {PLACEHOLDER} => <<PLACEHOLDER>>\n  //    NOTE: this will convert any {...} token. If you want to restrict, tighten the regex.\n  s = s.replace(/\\\\{([A-Z0-9_]+)\\\\}/g, \"<<$1>>\");\n\n  // 3) if someone wrote (<<AI_TOOL>>) etc, keep as-is; no further action needed\n  return s;\n}\n\nfunction deepNormalize(value) {\n  if (value === null || value === undefined) return value;\n\n  if (typeof value === \"string\") {\n    return normalizePlaceholdersInString(value);\n  }\n\n  if (Array.isArray(value)) {\n    return value.map((v) => deepNormalize(v));\n  }\n\n  if (typeof value === \"object\") {\n    const out = {};\n    for (const [k, v] of Object.entries(value)) {\n      out[k] = deepNormalize(v);\n    }\n    return out;\n  }\n\n  return value; // number/boolean\n}\n\nreturn items.map((item) => {\n  const json = item.json ?? {};\n\n  // Normalize everything deeply\n  const normalized = deepNormalize(json);\n\n  // Optional: ensure common keys exist (fail-safe)\n  normalized.source_url = normalized.source_url ?? \"\";\n  normalized.source_text = normalized.source_text ?? \"\";\n\n  return { json: normalized };\n});\n"
+            },
+            "type": "n8n-nodes-base.code",
+            "typeVersion": 2,
+            "position": [
+                1328,
+                -112
+            ],
+            "id": "6aecdb9c-20b0-42e6-beb6-e95fe75c8dab",
+            "name": "Code:NormalizePlaceholders"
+        },
+        {
+            "parameters": {
+                "fieldToSplitOut": "catchphrase_pack",
+                "options": {}
+            },
+            "type": "n8n-nodes-base.splitOut",
+            "typeVersion": 1,
+            "position": [
+                1488,
+                -272
+            ],
+            "id": "c8520435-1df1-497f-85fd-9319abf9a24a",
+            "name": "Split Out"
+        },
+        {
+            "parameters": {
+                "assignments": {
+                    "assignments": [
+                        {
+                            "id": "6287204b-9e12-4032-8268-ae49b39075cc",
+                            "name": "catch_text",
+                            "value": "={{ $json.text }}",
+                            "type": "string"
+                        },
+                        {
+                            "id": "6168e437-56f1-419d-b3a9-d3f11e5c6e24",
+                            "name": "pattern",
+                            "value": "={{ $json.pattern }}",
+                            "type": "string"
+                        },
+                        {
+                            "id": "cc2a0e9e-d37c-46a3-98b6-e3780747fa73",
+                            "name": "usage",
+                            "value": "={{ $json.usage }}",
+                            "type": "string"
+                        },
+                        {
+                            "id": "f565d22e-ce99-47e4-bc35-f5ee37f5ff95",
+                            "name": "source_url",
+                            "value": "={{ $('Code:NormalizePlaceholders').item.json.source_url }}",
+                            "type": "string"
+                        },
+                        {
+                            "id": "4397cf57-08c4-41e2-9b17-177cbb6f2a33",
+                            "name": "template_type",
+                            "value": "={{ $('Code:NormalizePlaceholders').item.json.template_pack.template_type }}",
+                            "type": "string"
+                        },
+                        {
+                            "id": "d749d562-819c-406a-a8d3-3081ca4614e0",
+                            "name": "created_at",
+                            "value": "={{ $now.toISO() }}",
+                            "type": "string"
+                        }
+                    ]
+                },
+                "options": {}
+            },
+            "type": "n8n-nodes-base.set",
+            "typeVersion": 3.4,
+            "position": [
+                1648,
+                -272
+            ],
+            "id": "c7d4ce5b-faa2-4c91-845a-5eaef6e41f3f",
+            "name": "Set:MapCatchRow"
+        },
+        {
+            "parameters": {
+                "operation": "append",
+                "documentId": {
+                    "__rl": true,
+                    "value": "1ceG2Lr-jWF4KO4vMQwSCQ1UTUfdCjzZXHn0B0PqoyTk",
+                    "mode": "list",
+                    "cachedResultName": "X運用",
+                    "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1ceG2Lr-jWF4KO4vMQwSCQ1UTUfdCjzZXHn0B0PqoyTk/edit?usp=drivesdk"
+                },
+                "sheetName": {
+                    "__rl": true,
+                    "value": 1031722399,
+                    "mode": "list",
+                    "cachedResultName": "キャッチフレーズ",
+                    "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1ceG2Lr-jWF4KO4vMQwSCQ1UTUfdCjzZXHn0B0PqoyTk/edit#gid=1031722399"
+                },
+                "columns": {
+                    "mappingMode": "defineBelow",
+                    "value": {
+                        "Catch Text": "={{ $json.catch_text }}",
+                        "Pattern": "={{ $json.pattern }}",
+                        "Usage": "={{ $json.usage }}",
+                        "Source Url": "={{ $json.source_url }}",
+                        "Created At": "={{ $json.created_at }}",
+                        "Combine Key（任意：デバッグ用に残すと便利）": "={{ $('Merge: Template and Phrase').item.json.combine_key }}"
+                    },
+                    "matchingColumns": [],
+                    "schema": [
+                        {
+                            "id": "Created At",
+                            "displayName": "Created At",
+                            "required": false,
+                            "defaultMatch": false,
+                            "display": true,
+                            "type": "string",
+                            "canBeUsedToMatch": true
+                        },
+                        {
+                            "id": "Catch Text",
+                            "displayName": "Catch Text",
+                            "required": false,
+                            "defaultMatch": false,
+                            "display": true,
+                            "type": "string",
+                            "canBeUsedToMatch": true
+                        },
+                        {
+                            "id": "Pattern",
+                            "displayName": "Pattern",
+                            "required": false,
+                            "defaultMatch": false,
+                            "display": true,
+                            "type": "string",
+                            "canBeUsedToMatch": true
+                        },
+                        {
+                            "id": "Usage",
+                            "displayName": "Usage",
+                            "required": false,
+                            "defaultMatch": false,
+                            "display": true,
+                            "type": "string",
+                            "canBeUsedToMatch": true
+                        },
+                        {
+                            "id": "Emotion ",
+                            "displayName": "Emotion ",
+                            "required": false,
+                            "defaultMatch": false,
+                            "display": true,
+                            "type": "string",
+                            "canBeUsedToMatch": true,
+                            "removed": false
+                        },
+                        {
+                            "id": "Placeholders Used ",
+                            "displayName": "Placeholders Used ",
+                            "required": false,
+                            "defaultMatch": false,
+                            "display": true,
+                            "type": "string",
+                            "canBeUsedToMatch": true,
+                            "removed": false
+                        },
+                        {
+                            "id": "Template Type ",
+                            "displayName": "Template Type ",
+                            "required": false,
+                            "defaultMatch": false,
+                            "display": true,
+                            "type": "string",
+                            "canBeUsedToMatch": true,
+                            "removed": false
+                        },
+                        {
+                            "id": "Source Url",
+                            "displayName": "Source Url",
+                            "required": false,
+                            "defaultMatch": false,
+                            "display": true,
+                            "type": "string",
+                            "canBeUsedToMatch": true
+                        },
+                        {
+                            "id": "Combine Key（任意：デバッグ用に残すと便利）",
+                            "displayName": "Combine Key（任意：デバッグ用に残すと便利）",
+                            "required": false,
+                            "defaultMatch": false,
+                            "display": true,
+                            "type": "string",
+                            "canBeUsedToMatch": true
+                        }
+                    ],
+                    "attemptToConvertTypes": false,
+                    "convertFieldsToString": false
+                },
+                "options": {}
+            },
+            "type": "n8n-nodes-base.googleSheets",
+            "typeVersion": 4.7,
+            "position": [
+                1824,
+                -272
+            ],
+            "id": "d900e696-d8b4-4533-801e-bdbc9a88826a",
+            "name": "Append row in sheet",
+            "credentials": {
+                "googleSheetsOAuth2Api": {
+                    "id": "yHBJrEj3zL44ZWGQ",
+                    "name": "Google Sheets account"
+                }
+            }
+        },
+        {
+            "parameters": {
+                "operation": "append",
+                "documentId": {
+                    "__rl": true,
+                    "value": "1ceG2Lr-jWF4KO4vMQwSCQ1UTUfdCjzZXHn0B0PqoyTk",
+                    "mode": "list",
+                    "cachedResultName": "X運用",
+                    "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1ceG2Lr-jWF4KO4vMQwSCQ1UTUfdCjzZXHn0B0PqoyTk/edit?usp=drivesdk"
+                },
+                "sheetName": {
+                    "__rl": true,
+                    "value": 598431992,
+                    "mode": "list",
+                    "cachedResultName": "テンプレート",
+                    "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1ceG2Lr-jWF4KO4vMQwSCQ1UTUfdCjzZXHn0B0PqoyTk/edit#gid=598431992"
+                },
+                "columns": {
+                    "mappingMode": "defineBelow",
+                    "value": {
+                        "template_id（一意キー）": "={{ $execution.id }}-{{ $json.source_url }}",
+                        "template_type": "={{ $json.template_pack.template_type }}",
+                        "template_text": "={{ $json.template_pack.template }}",
+                        "body_json": "={{ JSON.stringify($json.template_pack.body.join(\"\\n\") || []) }}",
+                        "placeholders_json": "={{ JSON.stringify($json.template_pack.placeholders || []) }}",
+                        "sanitized_terms_json": "={{ JSON.stringify($json.template_pack.sanitized_terms || []) }}",
+                        "source_url": "={{ $json.source_url }}",
+                        "created_at": "={{ $now.toISO() }}",
+                        "combine_key（任意）": "={{ $json.combine_key || 'combine' }}"
+                    },
+                    "matchingColumns": [],
+                    "schema": [
+                        {
+                            "id": "template_id（一意キー）",
+                            "displayName": "template_id（一意キー）",
+                            "required": false,
+                            "defaultMatch": false,
+                            "display": true,
+                            "type": "string",
+                            "canBeUsedToMatch": true,
+                            "removed": false
+                        },
+                        {
+                            "id": "template_type",
+                            "displayName": "template_type",
+                            "required": false,
+                            "defaultMatch": false,
+                            "display": true,
+                            "type": "string",
+                            "canBeUsedToMatch": true,
+                            "removed": false
+                        },
+                        {
+                            "id": "template_text",
+                            "displayName": "template_text",
+                            "required": false,
+                            "defaultMatch": false,
+                            "display": true,
+                            "type": "string",
+                            "canBeUsedToMatch": true,
+                            "removed": false
+                        },
+                        {
+                            "id": "body_json",
+                            "displayName": "body_json",
+                            "required": false,
+                            "defaultMatch": false,
+                            "display": true,
+                            "type": "string",
+                            "canBeUsedToMatch": true,
+                            "removed": false
+                        },
+                        {
+                            "id": "placeholders_json",
+                            "displayName": "placeholders_json",
+                            "required": false,
+                            "defaultMatch": false,
+                            "display": true,
+                            "type": "string",
+                            "canBeUsedToMatch": true,
+                            "removed": false
+                        },
+                        {
+                            "id": "sanitized_terms_json",
+                            "displayName": "sanitized_terms_json",
+                            "required": false,
+                            "defaultMatch": false,
+                            "display": true,
+                            "type": "string",
+                            "canBeUsedToMatch": true,
+                            "removed": false
+                        },
+                        {
+                            "id": "source_url",
+                            "displayName": "source_url",
+                            "required": false,
+                            "defaultMatch": false,
+                            "display": true,
+                            "type": "string",
+                            "canBeUsedToMatch": true,
+                            "removed": false
+                        },
+                        {
+                            "id": "created_at",
+                            "displayName": "created_at",
+                            "required": false,
+                            "defaultMatch": false,
+                            "display": true,
+                            "type": "string",
+                            "canBeUsedToMatch": true,
+                            "removed": false
+                        },
+                        {
+                            "id": "combine_key（任意）",
+                            "displayName": "combine_key（任意）",
+                            "required": false,
+                            "defaultMatch": false,
+                            "display": true,
+                            "type": "string",
+                            "canBeUsedToMatch": true,
+                            "removed": false
+                        }
+                    ],
+                    "attemptToConvertTypes": false,
+                    "convertFieldsToString": false
+                },
+                "options": {}
+            },
+            "type": "n8n-nodes-base.googleSheets",
+            "typeVersion": 4.7,
+            "position": [
+                1824,
+                -112
+            ],
+            "id": "14adb355-1820-4f20-867f-68ad164b6731",
+            "name": "Append row in sheet1",
+            "credentials": {
+                "googleSheetsOAuth2Api": {
+                    "id": "yHBJrEj3zL44ZWGQ",
+                    "name": "Google Sheets account"
+                }
+            }
+        },
+        {
+            "parameters": {},
+            "id": "b637769a-3968-41b7-8d44-67b43fd6bd51",
+            "name": "ErrorTrigger:Global",
+            "type": "n8n-nodes-base.errorTrigger",
+            "typeVersion": 1,
+            "position": [
+                96,
+                -544
+            ]
+        },
+        {
+            "parameters": {
+                "select": "channel",
+                "channelId": {
+                    "__rl": true,
+                    "value": "#all-monitaring-web-site",
+                    "mode": "name"
+                },
+                "text": "=🚨 ワークフローでエラーが発生しました！\n\n・エラーノード：{{ $node[\"ErrorTrigger:Global\"].parameter[\"node\"] }}\n・エラー内容：{{ $node[\"ErrorTrigger:Global\"].parameter[\"message\"] }}\n・時刻：{{new Date().toLocaleString()}}",
+                "otherOptions": {}
+            },
+            "id": "15a26271-f93f-42a8-9f38-fdb6139dee90",
+            "name": "Slack:ErrorNotify",
+            "type": "n8n-nodes-base.slack",
+            "typeVersion": 2.1,
+            "position": [
+                304,
+                -544
+            ],
+            "webhookId": "d5025120-cc34-45e5-a020-1d25eec1af48",
+            "credentials": {
+                "slackApi": {
+                    "id": "uv78jPZ831aDUtpk",
+                    "name": "Slack account"
+                }
+            }
+        },
+        {
+            "parameters": {
+                "select": "channel",
+                "channelId": {
+                    "__rl": true,
+                    "value": "#all-monitaring-web-site",
+                    "mode": "name"
+                },
+                "text": "=成功しました！\nhttps://docs.google.com/spreadsheets/d/1ceG2Lr-jWF4KO4vMQwSCQ1UTUfdCjzZXHn0B0PqoyTk/edit?gid=1031722399#gid=1031722399",
+                "otherOptions": {}
+            },
+            "id": "c5a25f18-a399-4786-8f6d-c3d3a931f7d9",
+            "name": "Slack:ErrorNotify1",
+            "type": "n8n-nodes-base.slack",
+            "typeVersion": 2.1,
+            "position": [
+                2080,
+                -112
+            ],
+            "webhookId": "d5025120-cc34-45e5-a020-1d25eec1af48",
+            "credentials": {
+                "slackApi": {
+                    "id": "uv78jPZ831aDUtpk",
+                    "name": "Slack account"
+                }
+            }
+        }
+    ],
+    "connections": {
+        "On form submission": {
+            "main": [
+                [
+                    {
+                        "node": "Normalize Input",
+                        "type": "main",
+                        "index": 0
+                    }
+                ]
+            ]
+        },
+        "Normalize Input": {
+            "main": [
+                [
+                    {
+                        "node": "CatchphraseExtractor",
+                        "type": "main",
+                        "index": 0
+                    },
+                    {
+                        "node": "Basic LLM Chain",
+                        "type": "main",
+                        "index": 0
+                    }
+                ]
+            ]
+        },
+        "Google Gemini Chat Model": {
+            "ai_languageModel": [
+                [
+                    {
+                        "node": "Basic LLM Chain",
+                        "type": "ai_languageModel",
+                        "index": 0
+                    }
+                ]
+            ]
+        },
+        "Structured Output Parser": {
+            "ai_outputParser": [
+                [
+                    {
+                        "node": "Basic LLM Chain",
+                        "type": "ai_outputParser",
+                        "index": 0
+                    }
+                ]
+            ]
+        },
+        "Google Gemini Chat Model1": {
+            "ai_languageModel": [
+                [
+                    {
+                        "node": "CatchphraseExtractor",
+                        "type": "ai_languageModel",
+                        "index": 0
+                    }
+                ]
+            ]
+        },
+        "CatchphraseExtractor": {
+            "main": [
+                [
+                    {
+                        "node": "add combine_key1",
+                        "type": "main",
+                        "index": 0
+                    }
+                ]
+            ]
+        },
+        "Merge: Template and Phrase": {
+            "main": [
+                [
+                    {
+                        "node": "Set:UnifyPayload",
+                        "type": "main",
+                        "index": 0
+                    }
+                ]
+            ]
+        },
+        "add combine_key": {
+            "main": [
+                [
+                    {
+                        "node": "Merge: Template and Phrase",
+                        "type": "main",
+                        "index": 0
+                    }
+                ]
+            ]
+        },
+        "add combine_key1": {
+            "main": [
+                [
+                    {
+                        "node": "Merge: Template and Phrase",
+                        "type": "main",
+                        "index": 1
+                    }
+                ]
+            ]
+        },
+        "Basic LLM Chain": {
+            "main": [
+                [
+                    {
+                        "node": "add combine_key",
+                        "type": "main",
+                        "index": 0
+                    }
+                ]
+            ]
+        },
+        "Set:UnifyPayload": {
+            "main": [
+                [
+                    {
+                        "node": "Code:NormalizePlaceholders",
+                        "type": "main",
+                        "index": 0
+                    }
+                ]
+            ]
+        },
+        "Code:NormalizePlaceholders": {
+            "main": [
+                [
+                    {
+                        "node": "Split Out",
+                        "type": "main",
+                        "index": 0
+                    },
+                    {
+                        "node": "Append row in sheet1",
+                        "type": "main",
+                        "index": 0
+                    }
+                ]
+            ]
+        },
+        "Split Out": {
+            "main": [
+                [
+                    {
+                        "node": "Set:MapCatchRow",
+                        "type": "main",
+                        "index": 0
+                    }
+                ]
+            ]
+        },
+        "Set:MapCatchRow": {
+            "main": [
+                [
+                    {
+                        "node": "Append row in sheet",
+                        "type": "main",
+                        "index": 0
+                    }
+                ]
+            ]
+        },
+        "Append row in sheet": {
+            "main": [
+                []
+            ]
+        },
+        "Append row in sheet1": {
+            "main": [
+                [
+                    {
+                        "node": "Slack:ErrorNotify1",
+                        "type": "main",
+                        "index": 0
+                    }
+                ]
+            ]
+        },
+        "ErrorTrigger:Global": {
+            "main": [
+                [
+                    {
+                        "node": "Slack:ErrorNotify",
+                        "type": "main",
+                        "index": 0
+                    }
+                ]
+            ]
+        }
+    },
+    "pinData": {},
+    "meta": {
+        "templateCredsSetupCompleted": true,
+        "instanceId": "08f731f92ccc8a5c5da3db6ecfae52595f2e0a818d4d668579fc375e3f9539a9"
+    }
+}
