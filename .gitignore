@@ -1,2 +1,6 @@
 .agent/
 n8n-mastery-roadmap.md
+node_modules/
+dist/
+.DS_Store
+.env
