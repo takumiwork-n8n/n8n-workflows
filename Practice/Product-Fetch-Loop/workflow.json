@@ -1,0 +1,556 @@
+{
+    "nodes": [
+        {
+            "parameters": {
+                "conditions": {
+                    "options": {
+                        "caseSensitive": true,
+                        "leftValue": "",
+                        "typeValidation": "strict",
+                        "version": 1
+                    },
+                    "conditions": [
+                        {
+                            "id": "73e2b689-25c7-46a6-bc8b-fa7b0c884927",
+                            "leftValue": "={{ $json[\"has_next?\"] }}",
+                            "rightValue": "true",
+                            "operator": {
+                                "type": "boolean",
+                                "operation": "true",
+                                "singleValue": true
+                            }
+                        }
+                    ],
+                    "combinator": "and"
+                },
+                "options": {
+                    "looseTypeValidation": false
+                }
+            },
+            "id": "77605e8e-8cb7-4f46-8662-488695fff754",
+            "name": "Has Next?",
+            "type": "n8n-nodes-base.if",
+            "typeVersion": 2,
+            "position": [
+                816,
+                992
+            ]
+        },
+        {
+            "parameters": {},
+            "type": "n8n-nodes-base.manualTrigger",
+            "typeVersion": 1,
+            "position": [
+                -672,
+                992
+            ],
+            "id": "54266883-5ba3-4880-b1fa-ad41ae37879a",
+            "name": "When clicking ‘Execute workflow’"
+        },
+        {
+            "parameters": {
+                "assignments": {
+                    "assignments": [
+                        {
+                            "id": "e1d521f3-662d-43f5-b880-fda8db78aa22",
+                            "name": "sheet_id",
+                            "value": "1U3qzncTXCJRRB0eKFuJp41VcAUamtMTFpsoH4r_yjPU",
+                            "type": "string"
+                        },
+                        {
+                            "id": "4dc0c6ba-ed6a-4388-8f03-7afe56f8f161",
+                            "name": "slack_channel_name",
+                            "value": "#all-monitaring-web-site",
+                            "type": "string"
+                        }
+                    ]
+                },
+                "options": {}
+            },
+            "type": "n8n-nodes-base.set",
+            "typeVersion": 3.4,
+            "position": [
+                -480,
+                992
+            ],
+            "id": "f041793e-c632-44a3-bda9-9a1efee4088e",
+            "name": "set-config"
+        },
+        {
+            "parameters": {
+                "url": "https://dummyjson.com/products",
+                "sendQuery": true,
+                "queryParameters": {
+                    "parameters": [
+                        {
+                            "name": "limit",
+                            "value": "30"
+                        },
+                        {
+                            "name": "skip",
+                            "value": "={{ $json.next_skip ?? 0 }}"
+                        }
+                    ]
+                },
+                "options": {
+                    "response": {
+                        "response": {
+                            "responseFormat": "json"
+                        }
+                    }
+                }
+            },
+            "id": "06b57382-b380-44e6-a790-e95d18fea4d2",
+            "name": "Fetch products",
+            "type": "n8n-nodes-base.httpRequest",
+            "typeVersion": 4,
+            "position": [
+                -288,
+                992
+            ],
+            "retryOnFail": true,
+            "waitBetweenTries": 5000,
+            "onError": "continueErrorOutput"
+        },
+        {
+            "parameters": {
+                "select": "channel",
+                "channelId": {
+                    "__rl": true,
+                    "value": "={{ $('set-config').item.json.slack_channel_name }}",
+                    "mode": "name"
+                },
+                "text": "=\"🚨 *API Request Failed*\\n\\n*Error*: {{ $json.error.message ?? 'Unknown error' }}\\n*Status Code*: {{ $json.error.httpCode ?? 'N/A' }}\\n*Time*: {{ $now.format('yyyy-MM-dd HH:mm:ss') }}\",",
+                "otherOptions": {}
+            },
+            "type": "n8n-nodes-base.slack",
+            "typeVersion": 2.4,
+            "position": [
+                -176,
+                1168
+            ],
+            "id": "5662ae2c-834f-4d39-a3db-0e6d946e7837",
+            "name": "Notidy API Error",
+            "webhookId": "60fdced5-0267-42d5-a810-ece86a740ddf",
+            "credentials": {
+                "slackApi": {
+                    "id": "uv78jPZ831aDUtpk",
+                    "name": "Slack account"
+                }
+            }
+        },
+        {
+            "parameters": {
+                "workflowId": {
+                    "__rl": true,
+                    "value": "xhPCAUqTr1HSDa7D",
+                    "mode": "list",
+                    "cachedResultUrl": "/workflow/xhPCAUqTr1HSDa7D",
+                    "cachedResultName": "save sheet via loop"
+                },
+                "workflowInputs": {
+                    "mappingMode": "defineBelow",
+                    "value": {
+                        "products": "={{ $json.products }}",
+                        "config": "={{ $('set-config').item.json.sheet_id }}"
+                    },
+                    "matchingColumns": [],
+                    "schema": [
+                        {
+                            "id": "products",
+                            "displayName": "products",
+                            "required": false,
+                            "defaultMatch": false,
+                            "display": true,
+                            "canBeUsedToMatch": true,
+                            "removed": false
+                        },
+                        {
+                            "id": "config",
+                            "displayName": "config",
+                            "required": false,
+                            "defaultMatch": false,
+                            "display": true,
+                            "canBeUsedToMatch": true,
+                            "type": "string",
+                            "removed": false
+                        }
+                    ],
+                    "attemptToConvertTypes": false,
+                    "convertFieldsToString": true
+                },
+                "options": {}
+            },
+            "type": "n8n-nodes-base.executeWorkflow",
+            "typeVersion": 1.3,
+            "position": [
+                -80,
+                992
+            ],
+            "id": "59bab739-3060-48a8-b107-b8f86521a7de",
+            "name": "Save Products(Sub)"
+        },
+        {
+            "parameters": {
+                "amount": 3
+            },
+            "type": "n8n-nodes-base.wait",
+            "typeVersion": 1.1,
+            "position": [
+                96,
+                992
+            ],
+            "id": "ee2d52fd-a769-4bd1-bb10-d1600b54f7a4",
+            "name": "Rate Limit Wait1",
+            "webhookId": "bdd07890-883d-467f-8346-5d68c7b33ca6"
+        },
+        {
+            "parameters": {
+                "fieldsToAggregate": {
+                    "fieldToAggregate": [
+                        {
+                            "fieldToAggregate": "id"
+                        }
+                    ]
+                },
+                "options": {}
+            },
+            "type": "n8n-nodes-base.aggregate",
+            "typeVersion": 1,
+            "position": [
+                272,
+                992
+            ],
+            "id": "2bf1509f-5955-44c5-ae49-c019f919cd38",
+            "name": "Aggregate Product IDs2"
+        },
+        {
+            "parameters": {
+                "assignments": {
+                    "assignments": [
+                        {
+                            "id": "e39a1663-4b91-48e9-acc7-a58101b548c5",
+                            "name": "total",
+                            "value": "={{$items(\"Fetch products\")[0].json.total}}",
+                            "type": "number"
+                        },
+                        {
+                            "id": "48d10849-1b0d-4a96-9f64-7ab998d6b18a",
+                            "name": "skip",
+                            "value": "={{$items(\"Fetch products\")[0].json.skip}}",
+                            "type": "number"
+                        },
+                        {
+                            "id": "ffe3b3e0-b3a8-4f03-8851-ec1ea4c87664",
+                            "name": "limit",
+                            "value": "={{$items(\"Fetch products\")[0].json.limit}}",
+                            "type": "number"
+                        },
+                        {
+                            "id": "65e1e6b2-34a9-4939-8f5a-15dd092dbf7c",
+                            "name": "run_count",
+                            "value": "={{ $runIndex + 1 }}",
+                            "type": "number"
+                        }
+                    ]
+                },
+                "options": {}
+            },
+            "type": "n8n-nodes-base.set",
+            "typeVersion": 3.4,
+            "position": [
+                464,
+                992
+            ],
+            "id": "d0b1eba4-7193-4896-b5e0-1c96c6bbf2fa",
+            "name": "Extract Pagination Info1"
+        },
+        {
+            "parameters": {
+                "operation": "append",
+                "documentId": {
+                    "__rl": true,
+                    "value": "={{ $('set-config').item.json.sheet_id }}",
+                    "mode": "id"
+                },
+                "sheetName": {
+                    "__rl": true,
+                    "value": 1533795312,
+                    "mode": "list",
+                    "cachedResultName": "loop_log",
+                    "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1U3qzncTXCJRRB0eKFuJp41VcAUamtMTFpsoH4r_yjPU/edit#gid=1533795312"
+                },
+                "columns": {
+                    "mappingMode": "defineBelow",
+                    "value": {
+                        "skip": "={{ $json.skip }}",
+                        "total ": "={{ $json.total }}",
+                        "limit": "={{ $json.limit }}",
+                        "loop_number": "={{ $json.run_count }}",
+                        "has_next?": "={{ $json.limit + $json.skip < $json.total }}"
+                    },
+                    "matchingColumns": [],
+                    "schema": [
+                        {
+                            "id": "skip",
+                            "displayName": "skip",
+                            "required": false,
+                            "defaultMatch": false,
+                            "display": true,
+                            "type": "string",
+                            "canBeUsedToMatch": true
+                        },
+                        {
+                            "id": "total ",
+                            "displayName": "total ",
+                            "required": false,
+                            "defaultMatch": false,
+                            "display": true,
+                            "type": "string",
+                            "canBeUsedToMatch": true
+                        },
+                        {
+                            "id": "limit",
+                            "displayName": "limit",
+                            "required": false,
+                            "defaultMatch": false,
+                            "display": true,
+                            "type": "string",
+                            "canBeUsedToMatch": true
+                        },
+                        {
+                            "id": "has_next?",
+                            "displayName": "has_next?",
+                            "required": false,
+                            "defaultMatch": false,
+                            "display": true,
+                            "type": "string",
+                            "canBeUsedToMatch": true
+                        },
+                        {
+                            "id": "loop_number",
+                            "displayName": "loop_number",
+                            "required": false,
+                            "defaultMatch": false,
+                            "display": true,
+                            "type": "string",
+                            "canBeUsedToMatch": true
+                        }
+                    ],
+                    "attemptToConvertTypes": false,
+                    "convertFieldsToString": false
+                },
+                "options": {}
+            },
+            "type": "n8n-nodes-base.googleSheets",
+            "typeVersion": 4.7,
+            "position": [
+                640,
+                992
+            ],
+            "id": "2e026527-093b-44f1-bb45-5c2d564e7768",
+            "name": "Log to Sheet1",
+            "credentials": {
+                "googleSheetsOAuth2Api": {
+                    "id": "yHBJrEj3zL44ZWGQ",
+                    "name": "Google Sheets account"
+                }
+            }
+        },
+        {
+            "parameters": {
+                "jsCode": "const currentSkip = $json.skip;\nconst currentLimit = $json.limit;\nconst next_skip = currentSkip + currentLimit;\n\n//  次のページの準備\nreturn {\n  json: {\n     next_skip\n  }\n} \n"
+            },
+            "type": "n8n-nodes-base.code",
+            "typeVersion": 2,
+            "position": [
+                1040,
+                896
+            ],
+            "id": "d6189f3f-8b13-4114-b942-8547092cad8d",
+            "name": "Calculate Next Skip1"
+        },
+        {
+            "parameters": {
+                "jsCode": "// ① 今回の実行回数を取得\nconst runCount = $input.first().json.loop_number || 1;\n\n// ② ここまでの積み上げ数（skip）を取得\n// ※前のノードから skip の値を受け取っている前提です。\n// もし取れない場合は $('Fetch products'). last().json.skip などに変えてください\nconst skippedCount = $input.first().json.skip || 0;\n\n// ③ 今回のAggregateに含まれるデータ数を計算\nconst items = $items(\"Aggregate Product IDs2\");\nconst currentBatchCount = items.reduce((sum, item) => {\n  const ids = item.json.id;\n  // idが配列ならその長さ、単体なら1としてカウント\n  return sum + (Array.isArray(ids) ? ids.length : 1);\n}, 0);\n\n// ④ 正しい合計値の計算（足し算！）\n// 「これまで飛ばした分」+「今回処理した分」\nconst totalProcessed = skippedCount + currentBatchCount;\n\nreturn [{ \n  json: {\n    runCount,\n    currentCount: currentBatchCount, // 今回やった数（例: 14）\n    totalProcessed,                  // 累計（例: 194）\n    text: `✅ Run ${runCount} 完了\\n今回: ${currentBatchCount}件\\n累計: ${totalProcessed} 件を処理しました`\n  }\n}]"
+            },
+            "type": "n8n-nodes-base.code",
+            "typeVersion": 2,
+            "position": [
+                1040,
+                1120
+            ],
+            "id": "23b3ee44-75d7-409f-9eac-b359d45b652f",
+            "name": "Generate Summary1"
+        },
+        {
+            "parameters": {
+                "select": "channel",
+                "channelId": {
+                    "__rl": true,
+                    "value": "={{ $('set-config').item.json.slack_channel_name }}",
+                    "mode": "name"
+                },
+                "text": "={{ $json.text }}",
+                "otherOptions": {}
+            },
+            "type": "n8n-nodes-base.slack",
+            "typeVersion": 2.4,
+            "position": [
+                1216,
+                1120
+            ],
+            "id": "ed95ea56-f412-46de-a0a4-d7b6c0f6b70c",
+            "name": "Notify Completion1",
+            "webhookId": "6db5565c-967f-49a5-9570-66cd01fa30cd",
+            "credentials": {
+                "slackApi": {
+                    "id": "uv78jPZ831aDUtpk",
+                    "name": "Slack account"
+                }
+            }
+        }
+    ],
+    "connections": {
+        "Has Next?": {
+            "main": [
+                [
+                    {
+                        "node": "Calculate Next Skip1",
+                        "type": "main",
+                        "index": 0
+                    }
+                ],
+                [
+                    {
+                        "node": "Generate Summary1",
+                        "type": "main",
+                        "index": 0
+                    }
+                ]
+            ]
+        },
+        "When clicking ‘Execute workflow’": {
+            "main": [
+                [
+                    {
+                        "node": "set-config",
+                        "type": "main",
+                        "index": 0
+                    }
+                ]
+            ]
+        },
+        "set-config": {
+            "main": [
+                [
+                    {
+                        "node": "Fetch products",
+                        "type": "main",
+                        "index": 0
+                    }
+                ]
+            ]
+        },
+        "Fetch products": {
+            "main": [
+                [
+                    {
+                        "node": "Save Products(Sub)",
+                        "type": "main",
+                        "index": 0
+                    }
+                ],
+                [
+                    {
+                        "node": "Notidy API Error",
+                        "type": "main",
+                        "index": 0
+                    }
+                ]
+            ]
+        },
+        "Save Products(Sub)": {
+            "main": [
+                [
+                    {
+                        "node": "Rate Limit Wait1",
+                        "type": "main",
+                        "index": 0
+                    }
+                ]
+            ]
+        },
+        "Rate Limit Wait1": {
+            "main": [
+                [
+                    {
+                        "node": "Aggregate Product IDs2",
+                        "type": "main",
+                        "index": 0
+                    }
+                ]
+            ]
+        },
+        "Aggregate Product IDs2": {
+            "main": [
+                [
+                    {
+                        "node": "Extract Pagination Info1",
+                        "type": "main",
+                        "index": 0
+                    }
+                ]
+            ]
+        },
+        "Extract Pagination Info1": {
+            "main": [
+                [
+                    {
+                        "node": "Log to Sheet1",
+                        "type": "main",
+                        "index": 0
+                    }
+                ]
+            ]
+        },
+        "Log to Sheet1": {
+            "main": [
+                [
+                    {
+                        "node": "Has Next?",
+                        "type": "main",
+                        "index": 0
+                    }
+                ]
+            ]
+        },
+        "Calculate Next Skip1": {
+            "main": [
+                [
+                    {
+                        "node": "Fetch products",
+                        "type": "main",
+                        "index": 0
+                    }
+                ]
+            ]
+        },
+        "Generate Summary1": {
+            "main": [
+                [
+                    {
+                        "node": "Notify Completion1",
+                        "type": "main",
+                        "index": 0
+                    }
+                ]
+            ]
+        }
+    },
+    "pinData": {},
+    "meta": {
+        "templateCredsSetupCompleted": true,
+        "instanceId": "08f731f92ccc8a5c5da3db6ecfae52595f2e0a818d4d668579fc375e3f9539a9"
+    }
+}
